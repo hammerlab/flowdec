@@ -1,10 +1,14 @@
 import unittest
 
-from tfdecon import restoration as tfdecon_restoration
-from tfdecon import data as tfdecon_data
-from tfdecon import validation as tfv
+import os
+from flowdec import data as fd_data
+from flowdec import validation as tfv
 from numpy.testing import assert_array_equal
 import numpy as np
+
+
+def dl2_enabled():
+    return os.getenv('FLOWDEC_UT_DL2', 'false').lower() == 'true'
 
 
 class TestRestoration(unittest.TestCase):
@@ -23,7 +27,7 @@ class TestRestoration(unittest.TestCase):
         # python/examples/Deconvolution - Unit Test Debugging.ipynb notebook:
         # import pickle
         # idx = 1
-        # with open('/tmp/tfdecon-ut-debug-data.pkl', 'wb') as fd:
+        # with open('/tmp/flowdec-ut-debug-data.pkl', 'wb') as fd:
         #     pickle.dump(res[idx], fd)
         # print(scores)
         # import pandas as pd
@@ -36,20 +40,22 @@ class TestRestoration(unittest.TestCase):
             thresh = thresholds.get(k, 1.)
             flags = np.array([s[tf_key] > s[k] for s in scores])
             self.assertTrue(np.mean(flags) >= thresh,
-                msg='TF scores not >= {}% of {} scores (all scores = {})'
-                        .format(thresh * 100, k, scores))
+                msg='TF scores not >= {}% of {} scores (pct better = {}) (all scores = {})'
+                        .format(thresh * 100, k, 100 * np.mean(flags), '\n'.join([str(m) for m in scores])))
 
     def test_bars(self):
         """Test reconstruction of blurred "Hollow Bars" volume"""
-        use_dl2 = True
         n_iter = 10
         thresholds = {
+            # Results should always improve on the original
             'original': 1.,
-            'sk': .9,
-            'dl2': .75 if use_dl2 else None
+
+            # Results should also be better than DL2 and scikit-image most of the time
+            'sk': .75,
+            'dl2': .75 if dl2_enabled() else None
         }
 
-        acq = tfdecon_data.bars_25pct()
+        acq = fd_data.bars_25pct()
 
         # Initialize list of acquisitions to deconvolve
         acqs = [acq]
@@ -155,7 +161,7 @@ class TestRestoration(unittest.TestCase):
 
     def _decon_shape(self, data, kernel):
         # Apply blur to original shape and run restoration on blurred image
-        acq = tfdecon_data.Acquisition(data=data, kernel=kernel, actual=data)
+        acq = fd_data.Acquisition(data=data, kernel=kernel, actual=data)
         acq = tfv.reblur(acq, scale=.001) # Add low amount of noise
         res = tfv.decon_tf(acq, 10, real_domain_fft=False)
 

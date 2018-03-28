@@ -1,9 +1,9 @@
 """ Deconvolution algorithm implementations """
 import abc
 import tensorflow as tf
-from tfdecon.fft_utils_tf import OPM_LOG2, OPM_NONE, optimize_dims, fftshift, ifftshift
-from tfdecon.tf_ops import pad_around_center, unpad_around_center, tf_print
-from tfdecon import fft_utils_tf
+from flowdec import fft_utils_tf
+from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, optimize_dims, fftshift, ifftshift
+from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_print
 
 
 class DeconvolutionResult(object):

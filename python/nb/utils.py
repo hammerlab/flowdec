@@ -1,14 +1,14 @@
 """ Collection of random utilities used in exploratory notebooks """
-# TODO: Decide what to do with this -- perhaps move to ./docs somewhere since it isn't crucial?
-import os
 
-import tfdecon
-from tfdecon import data as tfdecon_data
-from tfdecon.data import Acquisition
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage.interpolation import rotate
 from functools import partial
+
+# ####################### #
+# Visualization Utilities #
+# ####################### #
+
 
 def plot_zstack_2d(img, ncols=5, in_per_col=3, in_per_row=3, cmap='Greys_r', idx_offset=0):
     n = img.shape[0]
@@ -75,9 +75,6 @@ def plot_img_preview(img, zstart=None, zstop=None, cmap='viridis', proj_figsize=
     plot_zstack_2d(img[slice(zstart, zstop),:,:], idx_offset=zstart if zstart else 0,
                            cmap=cmap, **kwargs)
 
-def plot_z_projection(img, cmap='viridis', figsize=(12, 4)):
-    plt.imshow(img.max(axis=0), cmap=cmap)
-    plt.gcf().set_size_inches(figsize)
 
 rotate_xy = partial(rotate, axes=(1,2))
 rotate_yz = partial(rotate, axes=(0,1))
@@ -96,59 +93,44 @@ def plot_rotations(img, projection=lambda img: img.max(axis=0), cmap='viridis', 
             axs[i, j].imshow(im, cmap=cmap)
 
 
-##### Transformation Utilities
+# ######################### #
+# Data Generation Utilities #
+# ######################### #
 
-def normalize_2d(img, to=65535., epsilon=1e-8):
-    """Normalize the sum of pixel intensities in an image to a particular value"""
-    if np.any(img < 0):
-        raise ValueError('Cannot normalize image with negative pixel intensities')
-
-    isum = img.sum()
-    if np.isclose(isum, 0.):
-        raise ValueError('Cannot normalize image with intensity sum 0')
-
-    return np.clip(img * (to / isum), epsilon, to)
-
-def normalize_img(data, to=1.):
-    epsilon = 1e-8
-    return ((data - data.min()) / (data.max() - data.min())).clip(epsilon, 1.)
-
-
-#### Data Loading Utilities
-
-DATA_DIR_DEFAULT = os.path.expanduser('~/data/research/hammer/deconvolution/data')
-DATA_DIR = os.getenv('TFDECON_DATA_DIR', DATA_DIR_DEFAULT)
-
-
-def set_data_dir(path):
-    """Assign data directory manually
-
-    Otherwise, this will be inferred from the environment variable "TFDECON_DATA_DIR" and if
-    that is not set will default to `DATA_DIR_DEFAULT`
-    Args:
-        path: Path containing image data to use for validation and experimentation
-    """
-    global DATA_DIR
-    DATA_DIR = path
-
-
-def _path(path):
-    return os.path.expanduser(os.path.join(DATA_DIR, path))
-
-
-def load_bars():
-    """Get data for "Hollow Bars" dataset"""
-    img_tru = tfdecon_data.load_img_stack(_path('bars/Bars/*.tif'))
-    img_obs = tfdecon_data.load_img_stack(_path('bars/Bars-G10-P30/*.tif'))
-    img_psf = tfdecon_data.load_img_stack(_path('bars/PSF-Bars/*.tif'))
-    return Acquisition(img_obs, img_psf, actual=img_tru)
-
-
-def load_bead():
-    """Get data for "Hollow Bars" dataset"""
-    img_obs = tfdecon_data.load_img_stack(_path('bead/Bead/*.tif'))
-    img_psf = tfdecon_data.load_img_stack(_path('bead/PSF-Bead/*.tif'))
-    return Acquisition(img_obs, img_psf, actual=None)
+#
+# DATA_DIR_DEFAULT = os.path.expanduser('~/data/research/hammer/deconvolution/data')
+# DATA_DIR = os.getenv('TFDECON_DATA_DIR', DATA_DIR_DEFAULT)
+#
+#
+# def set_data_dir(path):
+#     """Assign data directory manually
+#
+#     Otherwise, this will be inferred from the environment variable "TFDECON_DATA_DIR" and if
+#     that is not set will default to `DATA_DIR_DEFAULT`
+#     Args:
+#         path: Path containing image data to use for validation and experimentation
+#     """
+#     global DATA_DIR
+#     DATA_DIR = path
+#
+#
+# def _path(path):
+#     return os.path.expanduser(os.path.join(DATA_DIR, path))
+#
+#
+# def load_bars():
+#     """Get data for "Hollow Bars" dataset"""
+#     img_tru = fld_data.load_img_stack(_path('bars/Bars/*.tif'))
+#     img_obs = fld_data.load_img_stack(_path('bars/Bars-G10-P30/*.tif'))
+#     img_psf = fld_data.load_img_stack(_path('bars/PSF-Bars/*.tif'))
+#     return Acquisition(img_obs, img_psf, actual=img_tru)
+#
+#
+# def load_bead():
+#     """Get data for "Hollow Bars" dataset"""
+#     img_obs = fld_data.load_img_stack(_path('bead/Bead/*.tif'))
+#     img_psf = fld_data.load_img_stack(_path('bead/PSF-Bead/*.tif'))
+#     return Acquisition(img_obs, img_psf, actual=None)
 
 
 def save_dataset(name, acq, path, dtype=np.float32):

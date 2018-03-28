@@ -1,8 +1,8 @@
 """ Utilities for performing data validation and analysis """
-from tfdecon import data as tfdecon_data
-from tfdecon import restoration as tfdecon_restoration
-from tfdecon import exec
-from tfdecon.fft_utils_tf import OPM_LOG2
+from flowdec import data as fd_data
+from flowdec import restoration as fd_restoration
+from flowdec import exec as fd_exec
+from flowdec.fft_utils_tf import OPM_LOG2
 from skimage import restoration as sk_restoration
 from skimage.transform import resize
 from skimage.exposure import rescale_intensity
@@ -14,7 +14,7 @@ import numpy as np
 
 def mutate(d, data_fn=None, kern_fn=None):
     """Apply functions data and/or kernel function to acquisition"""
-    return tfdecon_data.Acquisition(
+    return fd_data.Acquisition(
         data=data_fn(d.data) if data_fn else d.data,
         actual=data_fn(d.actual) if data_fn else d.actual,
         kernel=kern_fn(d.kernel) if kern_fn else d.kernel,
@@ -49,7 +49,7 @@ def downsample(acq, data_factor=None, kern_factor=None):
 
 
 def decon_tf(acq, n_iter, **kwargs):
-    return tfdecon_restoration.richardson_lucy(acq, n_iter, **kwargs)
+    return fd_restoration.richardson_lucy(acq, n_iter, **kwargs)
 
 
 def decon_sk(acq, n_iter):
@@ -57,7 +57,7 @@ def decon_sk(acq, n_iter):
 
 
 def decon_dl2(acq, n_iter, pad_mode):
-    return exec.run_dl2(acq, n_iter, pad_mode)
+    return fd_exec.run_dl2(acq, n_iter, pad_mode)
 
 
 def binarize(img):
@@ -88,7 +88,7 @@ def reblur(acq, scale=.05, seed=1):
     np.random.seed(seed)
     noise = np.random.poisson(sd, size=acq.actual.shape)
     data = fftconvolve(acq.actual, acq.kernel, 'same') + noise
-    return tfdecon_data.Acquisition(
+    return fd_data.Acquisition(
         data=data.astype(acq.data.dtype),
         kernel=acq.kernel,
         actual=acq.actual

@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import tensorflow as tf
-from tfdecon import fft_utils_np, fft_utils_tf
+from flowdec import fft_utils_np, fft_utils_tf
 from numpy.testing import assert_array_equal, assert_almost_equal
 
 
