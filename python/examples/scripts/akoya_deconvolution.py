@@ -220,8 +220,9 @@ def arr_to_uint16(img):
     if np.isclose(img_min, img_max):
         warnings.warn('Resulting image data array has min ~= max (result will be all 0s)')
         return np.zeros_like(img, dtype=np.uint16)
-    
-    # return ((img - img_min) / (img_max - img_min)).astype(np.uint16)
+
+    # return np.clip(img, 0., 65535.).astype(np.uint16)
+    # return (65535. * (img - img_min) / (img_max - img_min)).astype(np.uint16)
     return rescale_intensity(img, out_range=np.uint16).astype(np.uint16)
 
 IMG_ID = dict(channel=0, cycle=0)
@@ -270,6 +271,9 @@ def run_deconvolution(args, psfs, config):
             'Deconvolving stack file "{}" ({} of {}) --> shape = {}, dtype = {}'
             .format(f, i+1, len(files), img.shape, img.dtype)
         )
+
+        if img.min() < 0:
+            raise ValueError('Image to deconvolve cannot have negative values')
         
         _validate_stack_shape(img, config)
         ncyc, nz, nch, nh, nw = img.shape
@@ -292,14 +296,18 @@ def run_deconvolution(args, psfs, config):
                 times.append((icyc+1, ich+1, end_time - start_time))
 
                 # Restore mean intensity of entire z-stack 
-                # res = res * (acq.data.mean() / res.mean())
+                # res = np.clip(res, 0., acq.data.max())
+                # scaling_factor = (acq.data.sum() / res.sum()) / 2.0
+                # res = res * scaling_factor
 
                 res_ch.append(res)
 
             if args.dry_run:
                 continue
+
             # Stack results to (nz, nch, nh, nw)
             res_ch = np.stack(res_ch, 1)
+
             if list(res_ch.shape) != [nz, nch, nh, nw]:
                 raise ValueError(
                     'Stack across channels has wrong shape --> expected = {}, actual = {}'
@@ -314,7 +322,7 @@ def run_deconvolution(args, psfs, config):
         res_stack = np.stack(res_stack, 0)
 
         # Rescale float32 and convert to uint16
-        res_stack = arr_to_uint16(res_stack)
+        # res_stack = arr_to_uint16(res_stack)
 
         # Validate resulting shape matches the input
         if list(res_stack.shape) != list(img.shape):
