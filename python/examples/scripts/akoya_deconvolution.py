@@ -199,7 +199,36 @@ def _validate_stack_shape(img, psf):
             .format(config.n_channels_per_cycle(), nch)
         )
 
+
+# def image_summary(img, ct, log_dir):
+#     def _image_summary(img, ct):
+#         from skimage import io
+#         import os
+#         io.imsave(os.path.join(log_dir, 'img-{:05d}.tif'.format(ct)), img)
+#         print('Iteration {} - {}, {}'.format(ct, img.min(), img.max()))
+#         return img, ct
+#     log_op = tf.py_func(_image_summary, [img, ct], [img.dtype, ct.dtype], name=img.name.split(':')[0])[0]
+#     with tf.control_dependencies([log_op]):
+#         img_res = tf.identity(img)
+#         ct_res = tf.identity(ct)
+#     return img_res, ct_res
+
+IMG_ID = None
+
+def get_iteration_observer_fn(log_dir):
+    if not osp.exists(log_dir):
+        os.makedirs(log_dir)
+    def _observer_fn(tensors):
+        global IMG_ID
+        img, i = tensors
+        # Save max-z projection to file
+        f = osp.join(log_dir, 'img-{}-{:05d}.tif'.format(IMG_ID, i))
+        imsave(f, img.max(axis=0))
+    return _observer_fn
+
+
 def run_deconvolution(args, psfs, config):
+    global IMG_ID
     files = _get_files(args.input_dir, '.*\.tif$')
 
     # Tone down TF logging, though only the first setting below actually
@@ -208,8 +237,12 @@ def run_deconvolution(args, psfs, config):
     tf.logging.set_verbosity(tf.logging.WARN)
     session_config = tf.ConfigProto(log_device_placement=False)
 
+
     n_iter = int(args.n_iter)
-    algo = fd_restoration.RichardsonLucyDeconvolver(n_dims=3).initialize()
+    algo = fd_restoration.RichardsonLucyDeconvolver(
+        n_dims=3, pad_mode='log2', pad_min=np.array([0, 0, 6]),
+        observer_fn=get_iteration_observer_fn('C:\\Users\\User\\data\\deconvolution\\logs\\tensorflow')
+        ).initialize()
     
     # Stacks load as (cycles, z, channel, height, width)
     imgs = img_generator(files)
@@ -231,9 +264,11 @@ def run_deconvolution(args, psfs, config):
 
                 if args.dry_run:
                     continue
+                IMG_ID = 'cyc{:03d}-ch{:02d}'.format(icyc+1, ich+1)
+
                 # Results have shape (nz, nh, nw)
                 res = algo.run(acq, niter=n_iter, session_config=session_config).data
-                
+
                 # for z in range(nz):
                 #     res[z] = (acq.data[z].mean() / res[z].mean()) * res[z]
 

@@ -12,21 +12,41 @@ def tf_print(t, transform=None):
         r = tf.identity(t)
     return r
 
+def tf_observer(tensors, observer_fn):
+    """Inject graph operation to observe but not alter tensor values
+    
+    Args:
+        t: List of tensors to send to observer
+        observer_fn: Function with signature ```fn(tensors)``` where tensors will be a list
+            of numpy arrays or scalars representing the underlying tensor values; return
+            value from function will be ignored
+    Returns:
+        Input tensors wrapped with dependencies forcing passage of data to observer
+    """
+    def _observe(t):
+        observer_fn(t)
+        return t
+    observe_op = tf.py_func(_observe, tensors, [t.dtype for t in tensors], name='observer')[0]
+    with tf.control_dependencies([observe_op]):
+        ts = [tf.identity(t) for t in tensors]
+    return ts
 
-def pad_around_center(t, target_shape, fill=0):
+def pad_around_center(t, target_shape, mode='CONSTANT', constant_values=0):
     """Center tensor data within a (possibly) larger tensor
 
     Args:
         t: Tensor to center
         target_shape: Target shape of resulting tensor; must be >= shape of `t` in all dimensions
-        fill: Constant value to use for padding (default 0)
+        mode: One of ['CONSTANT', 'SYMMETRIC', 'REFLECT']; see
+            https://www.tensorflow.org/api_docs/python/tf/pad for details
+        constant_values: Constant value to use for padding with 'CONSTANT' mode (default 0)
     Returns:
-        Tensor with shape matching given shape and where necessary new values padded in (as `fill` value)
+        Tensor with shape matching given shape and where necessary new values padded in
     """
     t_shape = tf.shape(t)
     lopad = (target_shape - t_shape + 1) // 2
     hipad = target_shape - t_shape - lopad
-    return tf.pad(t, tf.stack([lopad, hipad], axis=1), constant_values=fill)
+    return tf.pad(t, tf.stack([lopad, hipad], axis=1), mode=mode, constant_values=constant_values)
 
 
 def unpad_around_center(t, source_shape):
