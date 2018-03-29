@@ -1,6 +1,6 @@
 
 import tensorflow as tf
-
+import numpy as np
 
 def tf_print(t, transform=None):
     """Inject graph operation to print a tensors underlying value (or transformation of it)"""
@@ -23,10 +23,10 @@ def tf_observer(tensors, observer_fn):
     Returns:
         Input tensors wrapped with dependencies forcing passage of data to observer
     """
-    def _observe(t):
-        observer_fn(t)
-        return t
-    observe_op = tf.py_func(_observe, tensors, [t.dtype for t in tensors], name='observer')[0]
+    def _observe(*args):
+        observer_fn(*args)
+        return np.array([0])
+    observe_op = tf.py_func(_observe, tensors, tf.int32, stateful=True, name='observer')[0]
     with tf.control_dependencies([observe_op]):
         ts = [tf.identity(t) for t in tensors]
     return ts

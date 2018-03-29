@@ -1,0 +1,8 @@
+python akoya_deconvolution.py --raw-dir=F:\2018-01-09-Run0 --input-dir=F:\2018-01-09-Run0-Out-1\1-Processor --output-dir=F:\2018-01-09-Run0-Out-1\2-Deconvolution --psf-dir=C:\Users\User\data\deconvolution\data\akoya_experiment_psf --n-iter=10 --psf-pattern="psf-ch{}.tif" --dry-run
+
+python akoya_deconvolution.py --raw-dir=F:\2018-01-09-Run0-Clean --input-dir=F:\2018-01-09-Run0-Clean-Out-tf\1-Processor --output-dir=F:\2018-01-09-Run0-Clean-Out-tf\2-Deconvolution --psf-dir=C:\Users\User\data\deconvolution\data\akoya_experiment_psf --n-iter=10 --psf-pattern="psf-ch{}.tif" --dry-run
+
+
+python akoya_deconvolution.py --raw-dir=F:\7-7-17-multicycle --input-dir=F:\7-7-17-multicycle-out-tf\1-Processor --output-dir=F:\7-7-17-multicycle-out-tf\2-Deconvolution --psf-dir=C:\Users\User\data\deconvolution\data\psfs\akoya_sample --n-iter=25 --psf-pattern="psf-rw-ch{}.tif" --pad-dims="0,0,6" --dry-run
+
+

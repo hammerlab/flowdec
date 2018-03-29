@@ -5,13 +5,14 @@ import json
 import numpy as np
 from os import path as osp
 import tensorflow as tf
-import timeit
+from timeit import default_timer as timer
 from flowdec import restoration as fd_restoration
 from flowdec import data as fd_data
 from argparse import ArgumentParser
 import logging 
 import sys 
 import re
+import warnings
 from skimage.external.tifffile import imread, imsave
 from skimage.exposure import rescale_intensity
 from shutil import copyfile
@@ -52,6 +53,15 @@ def make_arg_parser():
         required=True,
         metavar='PSFPATTERN',
         help="PSF file naming pattern (e.g. 'psf-ch\{channel_id\}.tif' where channel_id is 1-based index)"
+    )
+    parser.add_argument(
+        "--pad-dims",
+        required=False,
+        default="0,0,6",
+        metavar='PADDIMS',
+        help="Amount by which to pad a single z-stack as a 'x,y,z' string; e.g. '0,0,6' "
+            "for no x or y padding and at least 6 units of padding in z-direction (6 units"
+            "in z-direction would correspond to 3 slices on top and 3 on bottom)"
     )
     parser.add_argument(
         "--n-iter",
@@ -199,37 +209,45 @@ def _validate_stack_shape(img, psf):
             .format(config.n_channels_per_cycle(), nch)
         )
 
+def arr_to_uint16(img):
+    """ Convert float32 image array to uint16 after rescaling """
+    if img.min() < 0:
+        raise ValueError('Expecting only positive values in array')
+    if img.dtype != np.float32:
+        raise ValueError('Expecting float32 arrays')
 
-# def image_summary(img, ct, log_dir):
-#     def _image_summary(img, ct):
-#         from skimage import io
-#         import os
-#         io.imsave(os.path.join(log_dir, 'img-{:05d}.tif'.format(ct)), img)
-#         print('Iteration {} - {}, {}'.format(ct, img.min(), img.max()))
-#         return img, ct
-#     log_op = tf.py_func(_image_summary, [img, ct], [img.dtype, ct.dtype], name=img.name.split(':')[0])[0]
-#     with tf.control_dependencies([log_op]):
-#         img_res = tf.identity(img)
-#         ct_res = tf.identity(ct)
-#     return img_res, ct_res
+    img_min, img_max = img.min(), img.max()
+    if np.isclose(img_min, img_max):
+        warnings.warn('Resulting image data array has min ~= max (result will be all 0s)')
+        return np.zeros_like(img, dtype=np.uint16)
+    
+    # return ((img - img_min) / (img_max - img_min)).astype(np.uint16)
+    return rescale_intensity(img, out_range=np.uint16).astype(np.uint16)
 
-IMG_ID = None
+IMG_ID = dict(channel=0, cycle=0)
 
 def get_iteration_observer_fn(log_dir):
-    if not osp.exists(log_dir):
-        os.makedirs(log_dir)
-    def _observer_fn(tensors):
+    import shutil
+    if osp.exists(log_dir):
+        shutil.rmtree(log_dir)
+    def _observer_fn(*args):
         global IMG_ID
-        img, i = tensors
-        # Save max-z projection to file
-        f = osp.join(log_dir, 'img-{}-{:05d}.tif'.format(IMG_ID, i))
-        imsave(f, img.max(axis=0))
+        img, i = args
+        if IMG_ID['cycle'] != 1:
+            return
+        ldir = osp.join(log_dir, 'img-cyc{:02d}'.format(IMG_ID['cycle']))
+        if not osp.exists(ldir):
+            os.makedirs(ldir)
+        lfile = osp.join(ldir, 'ch{:02d}-iter{:04d}.tif'
+            .format(IMG_ID['channel'], i))
+        imsave(lfile, img[9]) # ~z-stack 5 (there will be 16 here) 
     return _observer_fn
 
 
 def run_deconvolution(args, psfs, config):
     global IMG_ID
     files = _get_files(args.input_dir, '.*\.tif$')
+    times = []
 
     # Tone down TF logging, though only the first setting below actually
     # seems to make any difference
@@ -239,10 +257,11 @@ def run_deconvolution(args, psfs, config):
 
 
     n_iter = int(args.n_iter)
+    pad_dims = np.array([int(p) for p in args.pad_dims.split(',')])
     algo = fd_restoration.RichardsonLucyDeconvolver(
-        n_dims=3, pad_mode='log2', pad_min=np.array([0, 0, 6]),
-        observer_fn=get_iteration_observer_fn('C:\\Users\\User\\data\\deconvolution\\logs\\tensorflow')
-        ).initialize()
+        n_dims=3, pad_mode='log2', pad_min=pad_dims,
+       # observer_fn=get_iteration_observer_fn('C:\\Users\\User\\data\\deconvolution\\logs\\tensorflow')
+    ).initialize()
     
     # Stacks load as (cycles, z, channel, height, width)
     imgs = img_generator(files)
@@ -264,13 +283,16 @@ def run_deconvolution(args, psfs, config):
 
                 if args.dry_run:
                     continue
-                IMG_ID = 'cyc{:03d}-ch{:02d}'.format(icyc+1, ich+1)
+                IMG_ID = dict(channel=ich + 1, cycle=icyc + 1)
 
                 # Results have shape (nz, nh, nw)
+                start_time = timer()
                 res = algo.run(acq, niter=n_iter, session_config=session_config).data
+                end_time = timer()
+                times.append((icyc+1, ich+1, end_time - start_time))
 
-                # for z in range(nz):
-                #     res[z] = (acq.data[z].mean() / res[z].mean()) * res[z]
+                # Restore mean intensity of entire z-stack 
+                # res = res * (acq.data.mean() / res.mean())
 
                 res_ch.append(res)
 
@@ -288,12 +310,18 @@ def run_deconvolution(args, psfs, config):
         if args.dry_run:
             continue
 
+        # Stack results along first axis to match input with cycles in first axis
         res_stack = np.stack(res_stack, 0)
-        # if list(res_stack.shape) != list(img.shape):
-        #     raise ValueError(
-        #         'Final stack has wrong shape --> expected = {}, actual = {}'
-        #         .format(list(img.shape), list(res_stack.shape))
-        #     )
+
+        # Rescale float32 and convert to uint16
+        res_stack = arr_to_uint16(res_stack)
+
+        # Validate resulting shape matches the input
+        if list(res_stack.shape) != list(img.shape):
+            raise ValueError(
+                'Final stack has wrong shape --> expected = {}, actual = {}'
+                .format(list(img.shape), list(res_stack.shape))
+            )
 
         res_file = osp.join(args.output_dir, osp.basename(f))
         logger.debug(
@@ -305,7 +333,7 @@ def run_deconvolution(args, psfs, config):
         # handles imagej formatting -- the docs aren't very explicit but they do mention
         # that with 'imagej=True' it can handle arrays up to 6 dims in TZCYXS order
         imsave(res_file, res_stack, imagej=True)
-    return None
+    return times
 
 if __name__ == "__main__":
     # Parse arguments
@@ -314,7 +342,7 @@ if __name__ == "__main__":
 
     logger.info('Beginning Stack Deconvolution')
     logger.debug('Arguments:')
-    for arg in ['input_dir', 'output_dir', 'psf_dir', 'psf_pattern', 'n_iter', 'dry_run']:
+    for arg in ['input_dir', 'output_dir', 'psf_dir', 'psf_pattern', 'pad_dims', 'n_iter', 'dry_run']:
         logger.debug('\t{}="{}"'.format(arg, getattr(args, arg)))
  
     
@@ -331,7 +359,10 @@ if __name__ == "__main__":
     psfs = load_psfs(args, config)
 
     logger.info('Running deconvolution')
-    run_deconvolution(args, psfs, config)
+    times = run_deconvolution(args, psfs, config)
+
+    logger.info('Deconvolution Complete --> Execution times:')
+    print('\n'.join([str(t) for t in times]))
 
 
 # Execute on original data with blank cycles:
