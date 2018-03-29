@@ -231,7 +231,12 @@ def run_deconvolution(args, psfs, config):
 
                 if args.dry_run:
                     continue
+                # Results have shape (nz, nh, nw)
                 res = algo.run(acq, niter=n_iter, session_config=session_config).data
+                
+                # for z in range(nz):
+                #     res[z] = (acq.data[z].mean() / res[z].mean()) * res[z]
+
                 res_ch.append(res)
 
             if args.dry_run:
