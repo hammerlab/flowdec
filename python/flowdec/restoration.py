@@ -165,6 +165,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
     def _build_tf_graph(self):
         niter = self._get_niter()
         padmh = tf.placeholder(tf.string, name='padding_mode')
+        # Data and kernel should have shapes (z, height, width)
         datah = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='data'))
         kernh = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='kernel'))
 
@@ -185,9 +186,10 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             # (after adding a minimum padding as well, if given) to avoid use of
             # Bluestein algorithm in favor of significantly faster Cooley-Tukey FFT
             if self.pad_min is None:
-                pad_shape = tf.shape(datah) + tf.zeros(self.n_dims, tf.int32)
+                pad_shape = tf.shape(datah)
             else:
                 pad_shape = tf.shape(datah) + tf.constant(self.pad_min, dtype=tf.int32)
+  
             datat = tf.cond(
                 tf.equal(padmh, OPM_LOG2),
                 lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode='REFLECT'),
