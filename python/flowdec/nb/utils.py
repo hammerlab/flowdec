@@ -97,41 +97,6 @@ def plot_rotations(img, projection=lambda img: img.max(axis=0), cmap='viridis', 
 # Data Generation Utilities #
 # ######################### #
 
-#
-# DATA_DIR_DEFAULT = os.path.expanduser('~/data/research/hammer/deconvolution/data')
-# DATA_DIR = os.getenv('TFDECON_DATA_DIR', DATA_DIR_DEFAULT)
-#
-#
-# def set_data_dir(path):
-#     """Assign data directory manually
-#
-#     Otherwise, this will be inferred from the environment variable "TFDECON_DATA_DIR" and if
-#     that is not set will default to `DATA_DIR_DEFAULT`
-#     Args:
-#         path: Path containing image data to use for validation and experimentation
-#     """
-#     global DATA_DIR
-#     DATA_DIR = path
-#
-#
-# def _path(path):
-#     return os.path.expanduser(os.path.join(DATA_DIR, path))
-#
-#
-# def load_bars():
-#     """Get data for "Hollow Bars" dataset"""
-#     img_tru = fld_data.load_img_stack(_path('bars/Bars/*.tif'))
-#     img_obs = fld_data.load_img_stack(_path('bars/Bars-G10-P30/*.tif'))
-#     img_psf = fld_data.load_img_stack(_path('bars/PSF-Bars/*.tif'))
-#     return Acquisition(img_obs, img_psf, actual=img_tru)
-#
-#
-# def load_bead():
-#     """Get data for "Hollow Bars" dataset"""
-#     img_obs = fld_data.load_img_stack(_path('bead/Bead/*.tif'))
-#     img_psf = fld_data.load_img_stack(_path('bead/PSF-Bead/*.tif'))
-#     return Acquisition(img_obs, img_psf, actual=None)
-
 
 def save_dataset(name, acq, path, dtype=np.float32):
     from skimage import io

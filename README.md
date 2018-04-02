@@ -29,7 +29,7 @@ Here is a basic example demonstrating how Flowdec can be used in a single signal
 
 See full example notebook [here](python/examples/Astronaut%20Deconvolution.ipynb)
 
-```
+```python
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage import data as sk_data
@@ -87,57 +87,39 @@ ax[2].set_title('Restoration using\nRichardson-Lucy')
 
 ## Installation
 
-**WIP** - This should eventually look like this:
+The project can be installed, ideally in a python 3.6 environment (though it should work in 3.5 too), by running:
 
-- pip install a package for building TF graphs and running them from python 
-- maven artifact for using pre-built graphs from java
-- docker examples 
-    - \* need to figure out how to extend the Tensorflow dynamic Dockerfile build script to include a few extra steps
+```bash
+git clone https://github.com/hammerlab/flowdec.git
+cd flowdec
+pip install .
+```
 
 
 ### Docker Instructions
 
-**WIP** - Eventually much of this will end up in a dockerfile but for now here is a start on getting things stood up:
+A local docker image can be built by running:
 
+```bash
+cd flowdec  # Note: not flowdec/docker, just cd flowdec
+
+docker build --no-cache -t flowdec -f Dockerfile .
+
+# If on a system that supports nvidia-docker, the GPU-enabled version can be built instead via:
+# nvidia-docker build --no-cache -t flowdec -f Dockerfile.gpu .
 ```
 
-cd docker
-docker rmi flowdec # delete image if necessary
-docker build --no-cache -t flowdec -f Dockerfile .
-docker build --no-cache -t flowdec -f Dockerfile.gpu .
+The image can then be run using:
 
-# run in background
+```bash
+# Run in background
 docker run -td -p 8988:8888 --name flowdec flowdec
 
-# run in foreground
+# Run in foreground
 docker run -ti -p 8988:8888 flowdec
-
-
-docker exec -it flowdec bash
-docker stop <id>
-
-
-docker pull tensorflow/tensorflow:latest-gpu
-docker run -td --name tf tensorflow/tensorflow:latest-gpu
-docker exec -it tf bash
-
-# to stop
-docker stop id
-docker rm id
-
-# docker steps
-apt-get update
-apt-get install -y git
-apt-get install -y vim
-mkdir /repos; cd /repos
-git clone https://github.com/eric-czech/flowdec.git
-cd codex-analysis/deconvolution/tfdecon/python/
-pip install .
-
-
-apt-get install -y default-jdk
-apt-get install -y maven
 ```
+
+The Flowdec dockerfile extends the [Tensorflow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar. 
 
 #### Docker Development Notes
 
@@ -145,44 +127,22 @@ List of Tensorflow tags on docker hub to inherit dockerfile from: https://hub.do
 
 Building a CPU only image:
 
-```
+```bash
 cd flowdec
 docker build --no-cache -t flowdec -f docker/Dockerfile .
 ```
 
 Building a GPU image:
 
-```
+```bash
 cd docker
 nvidia-docker build --no-cache -t flowdec -f Dockerfile.gpu .
-```
-
-Running an image:
-
-``` 
-# run in background
-docker run -td -p 8988:8888 --name flowdec flowdec
-
-# run in foreground
-docker run -ti -p 8988:8888 flowdec
 ```
 
 
 ## TODO
 
-- Decide what to do with datasets too big to fit in repo
-- Determine whether or not PSF generation utilities are worth the effort
-- Make docker files for environment initilization
-    - Extend tensorflow Dockerfile script?
-    - Finish setup.py
-    - Deploy to maven central?
+- Add PSF generator
+- Add and test java within docker image: ```apt-get install -y default-jdk maven```
 - Test multi-gpu on some linux machine via java
-- Compare results between DL2, TF, and microvolution (for time and accuracy)
-    - Attempt to get microvolution working in standalone examples (for more direct comparisons of time and accuracy)
-- Tensorboard monitoring in frozen graphs?
-    - Does any of this work in java?
-- Unit tests:
-    - fftshift
-    - cropping
-    - padding
-- Address TODOs in code
+- Tensorboard monitoring during iterations instead of python function injection
