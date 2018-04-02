@@ -46,11 +46,19 @@ psf = np.ones((5, 5)) / 25
 np.random.seed(1)
 img_blur = fftconvolve(img, psf, 'same') + (np.random.poisson(lam=25, size=img.shape) - 10) / 255.
 
+# Wrap data in an "Acqusition" instance
+acquisition = fd_data.Acquisition(data=img_blur, kernel=psf)
+
 # Initialize Tensorflow graph for 2-dimensional deconvolution 
 algo = fd_restoration.RichardsonLucyDeconvolver(n_dims=img.ndim).initialize()
 
 # Run 30 RL deconvolution iterations
-img_decon = algo.run(fd_data.Acquisition(data=img_blur, kernel=psf), niter=30).data
+img_decon = algo.run(acquisition, niter=30).data
+
+# Alternatively:
+# res = tf_restoration.richardson_lucy(acquisition, niter=30)) will
+# accomplish the same thing in a single step but this generally a bad
+# idea to use in a loop because the TF graph is redefined each time
 
 fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(16, 5))
 plt.gray()
