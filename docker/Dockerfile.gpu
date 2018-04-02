@@ -5,7 +5,7 @@ ENV TF_GPU true
 RUN apt-get update && apt-get install -y --no-install-recommends git vim
 
 RUN mkdir /repos && cd /repos && \
-    git clone https://github.com/eric-czech/flowdec.git && \
+    git clone https://github.com/hammerlab/flowdec.git && \
     cd flowdec/python && \
     pip install .
 
