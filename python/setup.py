@@ -27,5 +27,5 @@ if __name__ == '__main__':
         ],
         package_data={},
         install_requires=requires,
-        packages=['flowdec', 'flowdec.nb']
+        packages=['flowdec', 'flowdec.nb', 'flowdec.datasets']
     )

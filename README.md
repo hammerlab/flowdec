@@ -112,14 +112,14 @@ docker build --no-cache -t flowdec -f docker/Dockerfile .
 The image can then be run using:
 
 ```bash
-# Run in background
-docker run -td -p 8988:8888 --name flowdec flowdec
+# Run in background (port mapping is host:container if 8888 is already taken)
+docker run -td -p 8888:8888 --name flowdec flowdec
 
 # Run in foreground
-docker run -ti -p 8988:8888 flowdec
+docker run -ti -p 8888:8888 flowdec
 ```
 
-The Flowdec dockerfile extends the [Tensorflow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar. 
+The Flowdec dockerfile extends the [Tensorflow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar, where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
 
 #### Docker Development Notes
 
