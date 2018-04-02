@@ -1,8 +1,13 @@
 from setuptools import setup
+import os
 
+if os.getenv('TF_GPU', 'false') == 'true':
+    requires = ['tensorflow-gpu>=1.6.0']
+else:
+    requires = ['tensorflow>=1.6.0']
 
 with open('requirements.txt', 'r') as fd:
-    requires = [l.strip() for l in fd.readlines()]
+    requires += [l.strip() for l in fd.readlines()]
 
 if __name__ == '__main__':
     setup(

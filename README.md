@@ -65,6 +65,17 @@ ax[2].set_title('Restoration using\nRichardson-Lucy')
 ![Astro Example](docs/images/astro.png "Astro")
 
 
+## More Examples
+
+### Python 
+
+- [C. Elegans](python/examples/CElegans%20Deconvolution.ipynb) - Deconvolution of 712x672x104 acquisition
+- [Hollow Bars](python/examples/Hollow%20Bars%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
+- [Graph Export](python/examples/Algorithm%20Graph%20Export.ipynb) - Defining and exporting Tensorflow graphs
+
+### Java
+
+- [Multi-GPU Example](java/tf-decon/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) - Prototype example for how to (hopefully) be able to execute deconvolution against multiple GPUs in parallel
 
 ## Installation
 
@@ -81,6 +92,16 @@ ax[2].set_title('Restoration using\nRichardson-Lucy')
 **WIP** - Eventually much of this will end up in a dockerfile but for now here is a start on getting things stood up:
 
 ```
+
+cd docker
+docker rmi flowdec # delete image if necessary
+docker build -t flowdec .
+
+docker run -td --name flowdec flowdec
+docker exec -it flowdec bash
+docker stop <id>
+
+
 docker pull tensorflow/tensorflow:latest-gpu
 docker run -td --name tf tensorflow/tensorflow:latest-gpu
 docker exec -it tf bash
@@ -102,18 +123,6 @@ pip install .
 apt-get install -y default-jdk
 apt-get install -y maven
 ```
-
-## Examples
-
-### Python 
-
-- [C. Elegans](python/examples/CElegans%20Deconvolution.ipynb) - Deconvolution of 712x672x104 acquisition
-- [Hollow Bars](python/examples/Hollow%20Bars%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
-- [Graph Export](python/examples/Algorithm%20Graph%20Export.ipynb) - Defining and exporting Tensorflow graphs
-
-### Java
-
-- [Multi-GPU Example](java/tf-decon/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) - Prototype example for how to (hopefully) be able to execute deconvolution against multiple GPUs in parallel
 
 ## TODO
 

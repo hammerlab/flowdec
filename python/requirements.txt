@@ -1,4 +1,4 @@
-tensorflow-gpu>=1.6.0
 scikit-image
 matplotlib
 requests
+# Tensorflow CPUvsGPU dependency to be determined at runtime

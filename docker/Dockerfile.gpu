@@ -1,0 +1,8 @@
+FROM tensorflow/tensorflow:latest-gpu
+
+RUN apt-get update && apt-get install -y --no-install-recommends git vim
+
+RUN mkdir /repos && cd /repos && \
+    git clone https://github.com/eric-czech/flowdec.git && \
+    cd flowdec/python && \
+    pip install .
