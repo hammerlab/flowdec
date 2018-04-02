@@ -2,6 +2,8 @@ FROM tensorflow/tensorflow:1.6.0-py3
 
 ENV TF_GPU false
 
+ENV PYTHONPATH $PYTHONPATH:/repos/flowdec/python
+
 RUN apt-get update && apt-get install -y --no-install-recommends git vim
 
 RUN mkdir /repos && cd /repos && \
