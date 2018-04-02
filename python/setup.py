@@ -25,7 +25,6 @@ if __name__ == '__main__':
             'Programming Language :: Python',
             'Topic :: Scientific/Engineering :: Bio-Informatics',
         ],
-        package_data={},
         install_requires=requires,
         packages=['flowdec', 'flowdec.nb'],
         package_data={'flowdec.datasets': ['datasets/*/*.tif']}
