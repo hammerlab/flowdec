@@ -27,5 +27,5 @@ if __name__ == '__main__':
         ],
         install_requires=requires,
         packages=['flowdec', 'flowdec.nb'],
-        package_data={'flowdec.datasets': ['datasets/*/*.tif']}
+        package_data={'flowdec': ['datasets/*/*.tif']}
     )

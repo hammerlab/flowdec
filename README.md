@@ -114,6 +114,7 @@ The image can then be run using:
 ```bash
 # Run in background (port mapping is host:container if 8888 is already taken)
 docker run -td -p 8888:8888 --name flowdec flowdec
+docker exec -ti --name flowdec bash
 
 # Run in foreground
 docker run -ti -p 8888:8888 flowdec
