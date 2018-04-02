@@ -103,10 +103,10 @@ A local docker image can be built by running:
 ```bash
 cd flowdec  # Note: not flowdec/docker, just cd flowdec
 
-docker build --no-cache -t flowdec -f Dockerfile .
+docker build --no-cache -t flowdec -f docker/Dockerfile .
 
 # If on a system that supports nvidia-docker, the GPU-enabled version can be built instead via:
-# nvidia-docker build --no-cache -t flowdec -f Dockerfile.gpu .
+# nvidia-docker build --no-cache -t flowdec -f docker/Dockerfile.gpu .
 ```
 
 The image can then be run using:
