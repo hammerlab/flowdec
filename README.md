@@ -83,7 +83,7 @@ ax[2].set_title('Restoration using\nRichardson-Lucy')
 
 ### Java
 
-- [Multi-GPU Example](java/tf-decon/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) - Prototype example for how to (hopefully) be able to execute deconvolution against multiple GPUs in parallel
+- [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) - Prototype example for how to (hopefully) be able to execute deconvolution against multiple GPUs in parallel
 
 ## Installation
 
