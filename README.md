@@ -122,24 +122,6 @@ docker exec -it flowdec /bin/bash # Connect
 
 The Flowdec dockerfile extends the [Tensorflow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
 
-#### Docker Development Notes
-
-List of Tensorflow tags on docker hub to inherit dockerfile from: https://hub.docker.com/r/tensorflow/tensorflow/tags/
-
-Building a CPU only image:
-
-```bash
-cd flowdec
-docker build --no-cache -t flowdec -f docker/Dockerfile .
-```
-
-Building a GPU image:
-
-```bash
-cd docker
-nvidia-docker build --no-cache -t flowdec -f Dockerfile.gpu .
-```
-
 
 ## TODO
 
