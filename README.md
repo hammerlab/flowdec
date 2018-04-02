@@ -95,9 +95,16 @@ ax[2].set_title('Restoration using\nRichardson-Lucy')
 
 cd docker
 docker rmi flowdec # delete image if necessary
-docker build -t flowdec .
+docker build --no-cache -t flowdec -f Dockerfile .
+docker build --no-cache -t flowdec -f Dockerfile.gpu .
 
-docker run -td --name flowdec flowdec
+# run in background
+docker run -td -p 8988:8888 --name flowdec flowdec
+
+# run in foreground
+docker run -ti -p 8988:8888 flowdec
+
+
 docker exec -it flowdec bash
 docker stop <id>
 
@@ -123,6 +130,35 @@ pip install .
 apt-get install -y default-jdk
 apt-get install -y maven
 ```
+
+#### Docker Development Notes
+
+List of Tensorflow tags on docker hub to inherit dockerfile from: https://hub.docker.com/r/tensorflow/tensorflow/tags/
+
+Building a CPU only image:
+
+```
+cd flowdec
+docker build --no-cache -t flowdec -f docker/Dockerfile .
+```
+
+Building a GPU image:
+
+```
+cd docker
+nvidia-docker build --no-cache -t flowdec -f Dockerfile.gpu .
+```
+
+Running an image:
+
+``` 
+# run in background
+docker run -td -p 8988:8888 --name flowdec flowdec
+
+# run in foreground
+docker run -ti -p 8988:8888 flowdec
+```
+
 
 ## TODO
 
