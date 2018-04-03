@@ -39,10 +39,14 @@ class DeconvolutionGraph(object):
 
 class Deconvolver(metaclass=abc.ABCMeta):
 
+    def __init__(self, device):
+        self.device = device
+
     def _get_tf_graph(self):
         graph = tf.Graph()
         with graph.as_default():
-            inputs, outputs = self._build_tf_graph()
+            with tf.device(self.device):
+                inputs, outputs = self._build_tf_graph()
         return DeconvolutionGraph(graph, inputs, outputs)
 
     def initialize(self):
@@ -57,6 +61,12 @@ class Deconvolver(metaclass=abc.ABCMeta):
 
         if not hasattr(self, 'graph'):
             raise ValueError('Must initialize deconvolver before running (via `.initialize` function)')
+
+        if self.device is not None and not session_config.allow_soft_placement:
+            raise AssertionError(
+                'When explicitly setting a device, you must also set '
+                '"allow_soft_placement" to true in TF session configuration'
+            )
 
         with tf.Session(config=session_config, graph=self.graph.tf_graph) as sess:
             data_dict = {self.graph.inputs[k]:v for k, v in acquisition.to_feed_dict().items()}
@@ -85,7 +95,8 @@ class FFTDeconvolver(Deconvolver):
 
     def __init__(self, n_dims, pad_mode, pad_min,
         input_prep_fn, output_prep_fn,
-        real_domain_fft):
+        real_domain_fft, device):
+        super(FFTDeconvolver, self).__init__(device)
         self.n_dims = n_dims
         self.pad_mode = pad_mode
         self.pad_min = pad_min
@@ -97,6 +108,7 @@ class FFTDeconvolver(Deconvolver):
         # Because TF FFT implementations all only work with 32-bit floats the spatial inputs/outputs in the
         # constructed graph are constrained to this type for now (but it could change in the future)
         self.dtype = tf.float32
+        self.device = device
 
     def _wrap_input(self, tensor):
         return self.input_prep_fn(tensor.name, tensor) if self.input_prep_fn else tensor
@@ -145,13 +157,16 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         real_domain_fft: Flag indicating whether or not to use the real or complex TF FFT functions
         epsilon: Minimum value below which interemdiate results will become 0 to avoid division by 
             small numbers
+        device: Tensorflow format device name onto which the majority of the operations should be
+            placed (e.g. '/cpu:0', '/gpu:1'). If overriding this, not that you must also specify
+            "allow_soft_placement 
     """
     def __init__(self, n_dims, pad_mode=OPM_LOG2, pad_min=None,
         input_prep_fn=default_input_prep_fn, output_prep_fn=None, observer_fn=None,
-        real_domain_fft=False, epsilon=1e-6):
+        real_domain_fft=False, epsilon=1e-6, device=None):
         super(RichardsonLucyDeconvolver, self).__init__(
             n_dims, pad_mode, pad_min, input_prep_fn, 
-            output_prep_fn, real_domain_fft
+            output_prep_fn, real_domain_fft, device
         )
         self.observer_fn = observer_fn
         self.epsilon = epsilon
