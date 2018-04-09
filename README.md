@@ -1,6 +1,6 @@
 # Flowdec
 
-**Flowdec** is a library containing [Tensorflow](https://github.c.om/tensorflow/tensorflow) (TF) implementations of image and signal deconvolution algorithms.  Currently, only [Richardson-Lucy Deconvolution](https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution) has been implemented but others may come in the future.
+**Flowdec** is a library containing [TensorFlow](https://github.com/tensorflow/tensorflow) (TF) implementations of image and signal deconvolution algorithms.  Currently, only [Richardson-Lucy Deconvolution](https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution) has been implemented but others may come in the future.
 
 Flowdec is designed to construct and execute TF graphs in python as well as use frozen, exported graphs from other languages (e.g. Java).
 
@@ -8,9 +8,9 @@ Here are a few of the major advantages and disadvantages of Flowdec at the momen
 
 *Advantages*
 
-- **Support for Windows, Mac, and Linux** - Because Tensorflow can run on these platforms, so can Flowdec
-- **Client Support for Java, Go, C++, and Python** - Using Flowdec graphs from Python and Java has been tested, but theoretically they could also be used by any [Tensorflow API Client Libraries](https://www.tensorflow.org/api_docs/)
-- **GPU Accleration** - Executing [Tensorflow graphs on GPUs](https://www.tensorflow.org/programmers_guide/using_gpu) is trivial and will happen by default w/ Flowdec if you meet all of the Tensorflow requirements for this (i.e. CUDA Toolkit installed, Nvidia drivers, etc.)
+- **Support for Windows, Mac, and Linux** - Because TensorFlow can run on these platforms, so can Flowdec
+- **Client Support for Java, Go, C++, and Python** - Using Flowdec graphs from Python and Java has been tested, but theoretically they could also be used by any [TensorFlow API Client Libraries](https://www.tensorflow.org/api_docs/)
+- **GPU Accleration** - Executing [TensorFlow graphs on GPUs](https://www.tensorflow.org/programmers_guide/using_gpu) is trivial and will happen by default w/ Flowdec if you meet all of the Tensorflow requirements for this (i.e. CUDA Toolkit installed, Nvidia drivers, etc.)
 - **Image Dimensions** - Flowdec can support 1, 2, or 3 dimensional images/signals
 - **Multi-GPU Usage** - This has yet to be tested, but theoretically this is possible since TF can do it (and this [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) is a start)
 - **Image Preprocessing** - A trickier part of deconvolution implementations is dealing with image padding and cropping necessary to use faster FFT implementations -- in Flowdec, image padding using the reflection of the image along each axis can be specified manually or by letting it automatically round up and pad to the nearest power of 2 (which will enable use of faster Cooley-Tukey algorithm instead of the Bluestein algorithm provided by Nvidia cuFFT used by TF).
@@ -20,7 +20,7 @@ Here are a few of the major advantages and disadvantages of Flowdec at the momen
 *Disadvantages*
 
 - **Point Spread Functions** - Flowdec does not yet generate point spread functions so these must be built and supplied by something such as [PSFGenerator](http://bigwww.epfl.ch/algorithms/psfgenerator/).
-- **No Blind Deconvolution** - Currently, nothing in this arena has been attempted but since much recent research on this subject is centered around solutions in deep learning, Tensorflow will hopefully make for a good platform in the future.
+- **No Blind Deconvolution** - Currently, nothing in this arena has been attempted but since much recent research on this subject is centered around solutions in deep learning, TensorFlow will hopefully make for a good platform in the future.
 
 
 ## Basic Usage
