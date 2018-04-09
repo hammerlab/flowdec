@@ -1,11 +1,11 @@
-package org.hammerlab.tfdecon;
+package org.hammerlab.flowdec;
 
 import java.nio.file.Path;
 
 import ij.IJ;
 import ij.ImagePlus;
 
-public class TFDeconData {
+public class FlowdecData {
 
 	public static class Acquisition {
     	public ImagePlus data;
@@ -20,7 +20,7 @@ public class TFDeconData {
     }
 	
     public static Acquisition getDataset(String name) {
-    	Path dataDir = TFDecon.getProjectDatasetDir().resolve(name);
+    	Path dataDir = Flowdec.getProjectDatasetDir().resolve(name);
     	ImagePlus data = IJ.openImage(dataDir.resolve("data.tif").toString());
     	ImagePlus kernel = IJ.openImage(dataDir.resolve("kernel.tif").toString());
     	ImagePlus actual = IJ.openImage(dataDir.resolve("actual.tif").toString());

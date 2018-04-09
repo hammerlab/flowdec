@@ -1,10 +1,10 @@
-package org.hammerlab.tfdecon;
+package org.hammerlab.flowdec;
 
 import java.util.Map;
 
 import org.tensorflow.Tensor;
 
-public class TFDeconResults {
+public class FlowdecResults {
 
 	public static final String DEFAULT_RESULT_TENSOR_KEY = "result";
 	

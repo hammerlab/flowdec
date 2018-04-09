@@ -72,7 +72,7 @@ GL_PSF_ARGS = [
     ['size_y',      256,  "Number of pixels in result (y dimension)", "Dimensions"],
     ['size_z',      128,  "Number of pixels in result (z dimension)", "Dimensions"],
     ['na',          1.4,  "Numerical aperture of device", "Microscope Parameters"],
-    ['lambda',      .610, "Wavelength of emitted light in vacuum (microns)", "Microscope Parameters"],
+    ['wavelength',  .610, "Wavelength of emitted light in vacuum (microns)", "Microscope Parameters"],
     ['m',           100,  "Magnification factor", "Microscope Parameters"],
     ['ns',          1.33, "Specimen refractive index (RI)", "Microscope Parameters"],
     ['ng0',         1.5,  "Coverslip RI, design value", "Microscope Parameters"],
@@ -167,7 +167,7 @@ class GibsonLanni(PSF):
         size_y = self.config['size_y']
         size_z = self.config['size_z']
         NA = self.config['na']
-        wavelength = self.config['lambda']
+        wavelength = self.config['wavelength']
         M = self.config['m']
         ns = self.config['ns']
         ng0 = self.config['ng0']

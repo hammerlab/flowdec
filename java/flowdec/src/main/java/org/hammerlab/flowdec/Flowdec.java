@@ -1,4 +1,4 @@
-package org.hammerlab.tfdecon;
+package org.hammerlab.flowdec;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,12 +9,12 @@ import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
 import org.tensorflow.framework.ConfigProto;
 
-public class TFDecon {
+public class Flowdec {
 
 	private static final String DEFAULT_PAD_MODE = "log2";
 	
 	static Path getProjectDir() {
-		return Paths.get("../../").toAbsolutePath().normalize();
+		return Paths.get("..", "..").toAbsolutePath().normalize();
 	}
 	
 	public static Path getProjectTensorflowDir() {
@@ -22,7 +22,7 @@ public class TFDecon {
 	}
 	
 	public static Path getProjectDatasetDir() {
-		return getProjectDir().resolve("python/src/tfdecon/data");
+		return getProjectDir().resolve("python/flowdec/datasets");
 	}
 	
 	public static RichardsonLucy richardsonLucy() {
@@ -83,15 +83,15 @@ public class TFDecon {
 		
 		private static final String DOMAIN_TYPE = "complex";
 		
-		public TFDeconTask task2d(float[][] data, float[][] kernel, int niter) {
+		public FlowdecTask task2d(float[][] data, float[][] kernel, int niter) {
 			return this.task(Tensors.create(data), Tensors.create(kernel), niter);
 		}
 		
-		public TFDeconTask task3d(float[][][] data, float[][][] kernel, int niter) {
+		public FlowdecTask task3d(float[][][] data, float[][][] kernel, int niter) {
 			return this.task(Tensors.create(data), Tensors.create(kernel), niter);
 		}
 		
-		public TFDeconTask task(Tensor<?> data, Tensor<?> kernel, int niter) {
+		public FlowdecTask task(Tensor<?> data, Tensor<?> kernel, int niter) {
 			
 			if (data.shape().length != kernel.shape().length) {
 				throw new IllegalArgumentException(String.format(
@@ -102,7 +102,7 @@ public class TFDecon {
 			}
 			int ndims = data.shape().length;
 			
-			TFDeconTask.Builder builder = TFDeconTask.newBuilder()
+			FlowdecTask.Builder builder = FlowdecTask.newBuilder()
 				.addInput("data", data)
 				.addInput("kernel", kernel)
 				.addInput("niter", Tensors.create(niter))
@@ -112,7 +112,7 @@ public class TFDecon {
 			if (this.path.isPresent()) {
 				builder = builder.setModelPath(this.path.get());
 			} else {
-				Path modelPath = TFDecon.getProjectTensorflowDir()
+				Path modelPath = Flowdec.getProjectTensorflowDir()
 						.resolve("richardson-lucy-" + DOMAIN_TYPE + "-" + ndims + "d")
 						.normalize()
 						.toAbsolutePath();

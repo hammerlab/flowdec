@@ -1,4 +1,4 @@
-package org.hammerlab.tfdecon;
+package org.hammerlab.flowdec;
 
 import org.tensorflow.Graph;
 import org.tensorflow.framework.GraphDef;

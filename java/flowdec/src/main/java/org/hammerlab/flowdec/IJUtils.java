@@ -1,4 +1,4 @@
-package org.hammerlab.tfdecon;
+package org.hammerlab.flowdec;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;

@@ -1,4 +1,4 @@
-package org.hammerlab.tfdecon;
+package org.hammerlab.flowdec;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -11,13 +11,13 @@ import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Tensor;
 import org.tensorflow.framework.ConfigProto;
 
-public class TFDeconTask {
+public class FlowdecTask {
 
 	private static final String DEFAULT_SERVING_KEY = "serve";
 		
 	Builder builder;
 	
-	TFDeconTask(Builder builder){
+	FlowdecTask(Builder builder){
 		this.builder = builder;
 	}
 	
@@ -42,10 +42,10 @@ public class TFDeconTask {
 		}
 		
 		public Builder setArgs(Tensor<?> data, Tensor<?> kernel, Tensor<?> niter) {
-			this.addInput(TFDecon.Arg.DATA.name, data);
-			this.addInput(TFDecon.Arg.KERNEL.name, kernel);
-			this.addInput(TFDecon.Arg.NITER.name, niter);
-			this.addOutput(TFDecon.Arg.RESULT.name);
+			this.addInput(Flowdec.Arg.DATA.name, data);
+			this.addInput(Flowdec.Arg.KERNEL.name, kernel);
+			this.addInput(Flowdec.Arg.NITER.name, niter);
+			this.addOutput(Flowdec.Arg.RESULT.name);
 			return this;
 		}
 		
@@ -69,9 +69,9 @@ public class TFDeconTask {
 			return this;
 		}
 		
-		public TFDeconTask build() {
+		public FlowdecTask build() {
 			this.model = SavedModelBundle.load(this.path.toString(), DEFAULT_SERVING_KEY);
-			return new TFDeconTask(this);
+			return new FlowdecTask(this);
 		}
 		
 	}
@@ -80,8 +80,8 @@ public class TFDeconTask {
 		return new Builder();
 	}
 	
-	public TFDeconProcessor processor() {
-		return new TFDeconProcessor(this);
+	public FlowdecProcessor processor() {
+		return new FlowdecProcessor(this);
 	}
 	
 }

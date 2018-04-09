@@ -1,4 +1,4 @@
-package org.hammerlab.tfdecon;
+package org.hammerlab.flowdec;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.hammerlab.tfdecon.TFDeconResults.TFDeconResult;
+import org.hammerlab.flowdec.FlowdecResults.TFDeconResult;
 import org.tensorflow.Graph;
 import org.tensorflow.Session;
 import org.tensorflow.Session.Runner;
@@ -18,15 +18,15 @@ import org.tensorflow.framework.SignatureDef;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-public class TFDeconProcessor implements Callable<TFDeconResult>, Runnable {
+public class FlowdecProcessor implements Callable<TFDeconResult>, Runnable {
 
-	private final TFDeconTask task;
+	private final FlowdecTask task;
 	private TFDeconResult result;
 	
 	// See: https://github.com/tensorflow/tensorflow/blob/r1.6/tensorflow/python/saved_model/signature_constants.py
 	private static final String DEFAULT_SERVING_SIGNATURE_DEF_KEY = "serving_default";
 	
-	TFDeconProcessor(TFDeconTask task) {
+	FlowdecProcessor(FlowdecTask task) {
 		this.task = task;
 	}
 	

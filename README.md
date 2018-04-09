@@ -125,7 +125,8 @@ The Flowdec dockerfile extends the [Tensorflow DockerHub Images](https://hub.doc
 
 ## TODO
 
-- Add PSF generator
+- Figure out how to specify orientation of z-stacks for PSF generator (and which direction test datasets have)
+    - Research coverslip thickness and working distance inputs
 - Add and test java within docker image: ```apt-get install -y default-jdk maven```
 - Test multi-gpu on some linux machine via java
 - Tensorboard monitoring during iterations instead of python function injection

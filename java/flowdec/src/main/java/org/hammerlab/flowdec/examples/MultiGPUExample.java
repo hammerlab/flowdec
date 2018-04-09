@@ -1,4 +1,4 @@
-package org.hammerlab.tfdecon.examples;
+package org.hammerlab.flowdec.examples;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.hammerlab.tfdecon.IJUtils;
-import org.hammerlab.tfdecon.TFDeconTask;
+import org.hammerlab.flowdec.IJUtils;
+import org.hammerlab.flowdec.FlowdecTask;
 import org.tensorflow.Tensors;
 import org.tensorflow.framework.ConfigProto;
 
@@ -57,7 +57,7 @@ public class MultiGPUExample {
 		AtomicInteger ct = new AtomicInteger();
 		List<float[][][]> results = imgs.parallelStream()
 			.map(img -> 
-				TFDeconTask.newBuilder()
+				FlowdecTask.newBuilder()
 				.setSessionConfig(config)
 				.setArgs(
 					Tensors.create(img), 
