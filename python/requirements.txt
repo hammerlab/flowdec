@@ -1,4 +1,4 @@
 scikit-image
 matplotlib
 requests
-# Tensorflow CPUvsGPU dependency to be determined at runtime
+# TensorFlow CPUvsGPU dependency to be determined at runtime

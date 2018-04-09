@@ -1,4 +1,4 @@
-""" Tensorflow utilities related to FFT padding and function selection """
+""" TensorFlow utilities related to FFT padding and function selection """
 import tensorflow as tf
 
 OPM_LOG2 = 'log2'
@@ -30,11 +30,10 @@ def get_fft_tf_fns(n_dims, real_domain_only=True):
         raise ValueError('Number of data dimensions must be <= 3')
 
 
-
 def optimize_dims(dims, mode):
     """Compute FFT Length for data padding necessary to optimize FFT implementations.
 
-    Since the primary GPU FFT implementation used by Tensorflow is cuFFT, optimal
+    Since the primary GPU FFT implementation used by TensorFlow is cuFFT, optimal
     dimensions for arguments should be constructed following the guidelines
     provided by [Nvidia](http://docs.nvidia.com/cuda/cufft/index.html#accuracy-and-performance).
 
@@ -131,7 +130,7 @@ def fftshift(arr, ndims=None):
     Args:
         arr: Array to swap half-spaces for
         ndims: Number of dimensions to expect in tensor; defaults to None implying that an attempt will
-        be made to infer this from the tensor, though this is not always a
+        be made to infer this from the tensor (which does not always work for dynamic placeholders)
     Returns:
         Array of same dimensions (see np.fft.fftshift for more details)
     """
@@ -150,7 +149,7 @@ def ifftshift(arr, ndims=None):
     Args:
         arr: Array to swap half-spaces for
         ndims: Number of dimensions to expect in tensor; defaults to None implying that an attempt will
-        be made to infer this from the tensor, though this is not always a
+        be made to infer this from the tensor (which does not always work for dynamic placeholders)
     Returns:
         Array of same dimensions (see np.fft.ifftshift for more details)
     """

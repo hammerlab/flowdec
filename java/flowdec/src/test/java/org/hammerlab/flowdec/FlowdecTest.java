@@ -17,19 +17,29 @@ public class FlowdecTest extends TestCase {
 		return new TestSuite(FlowdecTest.class);
 	}
 
+	/**
+	 * Verify that graphs can be loaded
+	 */
 	public void testGraphLoad() {
-		Flowdec.richardsonLucy().task2d(new float[10][10], new float[10][10], 10).processor();
+		Flowdec.richardsonLucy()
+			.task2d(new float[10][10], new float[10][10], 10)
+			.processor();
 	}
 
+	/**
+	 * Verify that graphs can also be run
+	 */
 	public void testGraphExecution() {
-		Flowdec.richardsonLucy().task2d(new float[10][10], new float[10][10], 10).processor().run();
+		Flowdec.richardsonLucy()
+			.task2d(new float[10][10], new float[10][10], 10)
+			.processor().run();
 	}
 
+	/**
+	 * Test that execution of 2D project dataset deconvolution succeeds
+	 */
 	public void testDeconvolve2D() {
 		Acquisition acq = FlowdecData.getDataset("bars-25pct");
-
-		System.out.println(IJUtils.getImageStats(acq.data));
-		System.out.println(IJUtils.getImageStats(acq.kernel));
 
 		TFDeconResult res = Flowdec.richardsonLucy()
 				.task2d(IJUtils.toFloatArray(acq.data)[0], 
@@ -38,6 +48,9 @@ public class FlowdecTest extends TestCase {
 		res.data().float2d();
 	}
 
+	/**
+	 * Test that execution of 3D project dataset deconvolution succeeds
+	 */
 	public void testDeconvolve3D() {
 		Acquisition acq = FlowdecData.getDataset("bars-25pct");
 		TFDeconResult res = Flowdec.richardsonLucy()

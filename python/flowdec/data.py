@@ -241,10 +241,15 @@ def load_celegans_channel(channel):
 
 # Repository Datasets
 
+def _get_dataset_path(path):
+    """Create absolute path from relative path starting in datasets folder"""
+    return os.path.join(flowdec.data_dir, path)
+
+
 def _load_repo_dataset(name):
     """Get dataset by name"""
 
-    data_dir = os.path.join(flowdec.data_dir, name)
+    data_dir = _get_dataset_path(name)
     if not os.path.exists(data_dir):
         raise ValueError('Dataset "{}" not found (path "{}" does not exist)'.format(name, data_dir))
 

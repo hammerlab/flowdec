@@ -8,9 +8,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 public class TFUtils {
 
 	/**
-	 * Set device associated with Tensorflow graph execution
+	 * Set device associated with TensorFlow graph execution
 	 * 
-	 * @param g Tensorflow graph instance
+	 * @param g TensorFlow graph instance
 	 * @param device Name of device to place execution on; e.g. "/cpu:0", "/gpu:1", etc.
 	 * See <a href="https://www.tensorflow.org/programmers_guide/faq">TF FAQ</a> for more details.
 	 * @return Graph with all operations assigned to given device

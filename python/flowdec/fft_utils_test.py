@@ -1,18 +1,11 @@
 import unittest
 import numpy as np
 import tensorflow as tf
-from flowdec import fft_utils_np, fft_utils_tf
+from flowdec import fft_utils_np, fft_utils_tf, test_utils
 from numpy.testing import assert_array_equal, assert_almost_equal
 
 
 class TestFFTUtils(unittest.TestCase):
-
-    def exec_tf(self, fn):
-        g = tf.Graph()
-        with g.as_default():
-            tf_res = fn()
-        with tf.Session(graph=g) as sess:
-            return sess.run(tf_res)
 
     def _test_padding(self, d, k, actual):
         def tf_fn():
@@ -20,7 +13,7 @@ class TestFFTUtils(unittest.TestCase):
             kt = tf.constant(k, dtype=tf.float32)
             return fft_utils_tf.get_fft_pad_dims(dt, kt)
 
-        tf_res = self.exec_tf(tf_fn)
+        tf_res = test_utils.exec_tf(tf_fn)
         np_res = fft_utils_np.get_fft_pad_dims(d, k)
 
         self.assertTrue(type(tf_res) is np.ndarray)
@@ -29,7 +22,7 @@ class TestFFTUtils(unittest.TestCase):
         self.assertTrue(np.array_equal(tf_res, actual))
 
     def test_padding(self):
-        """Verify padding operations implemented as Tensorflow ops"""
+        """Verify padding operations implemented as TensorFlow ops"""
         self._test_padding(np.ones(1), np.ones(1), np.array([1]))
         self._test_padding(np.ones((10)), np.ones((5)), np.array([14]))
         self._test_padding(np.ones((10, 5)), np.ones((5, 3)), np.array([14, 7]))
@@ -42,7 +35,7 @@ class TestFFTUtils(unittest.TestCase):
             pad_dims = fft_utils_tf.get_fft_pad_dims(dt, kt)
             return fft_utils_tf.optimize_dims(pad_dims, mode)
 
-        tf_res = self.exec_tf(tf_fn)
+        tf_res = test_utils.exec_tf(tf_fn)
         np_res = fft_utils_np.optimize_dims(fft_utils_np.get_fft_pad_dims(d, k), mode)
 
         self.assertTrue(type(tf_res) is np.ndarray)
@@ -68,6 +61,32 @@ class TestFFTUtils(unittest.TestCase):
         with self.assertRaises(ValueError):
             self._test_optimize_padding(np.ones((1)), np.ones((1)), 'invalid_mode_name', np.array([1]))
 
+    def _test_shift(self, x, tf_shift_fn, np_shift_fn):
+        def tf_fn():
+            return tf_shift_fn(tf.constant(x))
+        x_shift_actual = test_utils.exec_tf(tf_fn)
+        x_shift_expect = np_shift_fn(x)
+        assert_array_equal(x_shift_actual, x_shift_expect)
+
+    def _test_all_shifts(self, tf_shift_fn, np_shift_fn):
+        # 1D Cases
+        self._test_shift(np.arange(99), tf_shift_fn, np_shift_fn)
+        self._test_shift(np.arange(100), tf_shift_fn, np_shift_fn)
+
+        # 2D Cases
+        x = np.reshape(np.arange(50), (25, 2))
+        self._test_shift(x, tf_shift_fn, np_shift_fn)
+
+        # 3D Cases
+        self._test_shift(np.reshape(np.arange(125), (5, 5, 5)), tf_shift_fn, np_shift_fn)
+        self._test_shift(np.reshape(np.arange(60), (3, 4, 5)), tf_shift_fn, np_shift_fn)
+
+    def test_fftshift(self):
+        self._test_all_shifts(fft_utils_tf.fftshift, np.fft.fftshift)
+
+    def test_ifftshift(self):
+        self._test_all_shifts(fft_utils_tf.ifftshift, np.fft.ifftshift)
+
     def _test_convolution(self, d, k, mode, actual=None):
         def tf_fn():
             dt = tf.constant(d, dtype=tf.float32)
@@ -82,10 +101,10 @@ class TestFFTUtils(unittest.TestCase):
             dk_fft = fft_fwd(kt, fft_length=optim_dims)
             dconv = fft_utils_tf.convolve(dt, dk_fft, optim_dims, fft_fwd, fft_rev)
 
-            # Extract path from result matching dimensions of original data array
+            # Extract patch from result matching dimensions of original data array
             return fft_utils_tf.extract(dconv, tf.shape(dt), pad_dims)
 
-        tf_res = self.exec_tf(tf_fn)
+        tf_res = test_utils.exec_tf(tf_fn)
         np_res = fft_utils_np.convolve(d, k)
 
         assert_almost_equal(tf_res, np_res, decimal=3)
@@ -93,18 +112,12 @@ class TestFFTUtils(unittest.TestCase):
         if actual is not None:
             assert_array_equal(tf_res, actual)
 
-
     def test_convolution(self):
 
         #######################
         # Verified Test Cases #
         #######################
-        # * Validate that Numpy == Tensorflow == Manually Defined Expectation
-
-        # actual = [1.]
-        #self._test_convolution(np.ones((0)), np.ones((0)), 'none', actual)
-        # self._test_convolution(np.array([], dtype=np.float32), np.array([], dtype=np.float32), 'none', actual)
-        # return
+        # * Validate that Numpy == TensorFlow == Manually Defined Expectation
 
         for mode in fft_utils_tf.OPTIMAL_PAD_MODES:
 
@@ -130,7 +143,7 @@ class TestFFTUtils(unittest.TestCase):
             ###########################
             # Corroborated Test Cases #
             ###########################
-            # * Validate that Numpy == Tensorflow results only
+            # * Validate that Numpy == TensorFlow results only
 
             # Test 1-3D cases with larger, rectangular dimensions and unit length axes
             for shape in [
@@ -168,8 +181,9 @@ class TestFFTUtils(unittest.TestCase):
         # gives a message like "Check failed: size >= 0 (-9223372036854775808 vs. 0)" before
         # the python process again crashes.  As a result, this check will not be run here
         # but it is important that similar checks are run on higher level parts of the API
-        # (i.e. pre-Tensorflow) to keep this from coming up.
+        # (i.e. pre-TensorFlow) to keep this from coming up.
         # self._test_convolution(np.ones((0)), np.ones((0)), mode, [1.])
+
 
 if __name__ == '__main__':
     unittest.main()

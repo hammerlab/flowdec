@@ -17,7 +17,7 @@ public class Flowdec {
 		return Paths.get("..", "..").toAbsolutePath().normalize();
 	}
 	
-	public static Path getProjectTensorflowDir() {
+	public static Path getProjectTensorFlowDir() {
 		return getProjectDir().resolve("tensorflow");
 	}
 	
@@ -112,7 +112,7 @@ public class Flowdec {
 			if (this.path.isPresent()) {
 				builder = builder.setModelPath(this.path.get());
 			} else {
-				Path modelPath = Flowdec.getProjectTensorflowDir()
+				Path modelPath = Flowdec.getProjectTensorFlowDir()
 						.resolve("richardson-lucy-" + DOMAIN_TYPE + "-" + ndims + "d")
 						.normalize()
 						.toAbsolutePath();

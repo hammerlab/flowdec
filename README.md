@@ -10,11 +10,11 @@ Here are a few of the major advantages and disadvantages of Flowdec at the momen
 
 - **Support for Windows, Mac, and Linux** - Because TensorFlow can run on these platforms, so can Flowdec
 - **Client Support for Java, Go, C++, and Python** - Using Flowdec graphs from Python and Java has been tested, but theoretically they could also be used by any [TensorFlow API Client Libraries](https://www.tensorflow.org/api_docs/)
-- **GPU Accleration** - Executing [TensorFlow graphs on GPUs](https://www.tensorflow.org/programmers_guide/using_gpu) is trivial and will happen by default w/ Flowdec if you meet all of the Tensorflow requirements for this (i.e. CUDA Toolkit installed, Nvidia drivers, etc.)
-- **Image Dimensions** - Flowdec can support 1, 2, or 3 dimensional images/signals
+- **GPU Accleration** - Executing [TensorFlow graphs on GPUs](https://www.tensorflow.org/programmers_guide/using_gpu) is trivial and will happen by default w/ Flowdec if you meet all of the TensorFlow requirements for this (i.e. CUDA Toolkit installed, Nvidia drivers, etc.)
+- **Performance** - There are some other similar open source solutions that run *partially* with GPU acceleration, though this generally means that only FFT and iFFT operations run on GPUs while all other operations run on the CPU -- Experiments with Flowdec show that this means that the same 3D image may take ~8 mins to run on a single CPU, ~40s to run with another open source solution using only FFT/iFFT GPU accleration, and ~1s with Flowdec/TensorFlow using GPU accleration for all operations.
+- **Signal Dimensions** - Flowdec can support 1, 2, or 3 dimensional images/signals
 - **Multi-GPU Usage** - This has yet to be tested, but theoretically this is possible since TF can do it (and this [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) is a start)
 - **Image Preprocessing** - A trickier part of deconvolution implementations is dealing with image padding and cropping necessary to use faster FFT implementations -- in Flowdec, image padding using the reflection of the image along each axis can be specified manually or by letting it automatically round up and pad to the nearest power of 2 (which will enable use of faster Cooley-Tukey algorithm instead of the Bluestein algorithm provided by Nvidia cuFFT used by TF).
-- **Performance** - There are some other similar open source solutions that run *partially* with GPU acceleration, though this generally means that only FFT and iFFT operations run on GPUs while all other operations run on the CPU -- Experiments with Flowdec show that this means that the same 3D image may take ~8 mins to run on a single CPU, ~40s to run with another open source solution using only FFT/iFFT GPU accleration, and ~1s with Flowdec/Tensorflow using GPU accleration for all operations.
 - **Visualizing Iterations** - Another difficulty with iterative deconvolution algorithms is in determining when they should stop.  With Richardson Lucy, this is usually done somewhat subjectively based on visualizing results for different iteration counts and Flowdec at least helps with this by letting ```observer``` functions be given that take intermediate results of the deconvolution process to be written out to image sequences or stacks for manual inspection.  Future work may include using [Tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard) to do this instead but for now, it has been difficult to get image summaries working within TF "while" loops.
 
 *Disadvantages*
@@ -49,7 +49,7 @@ img_blur = fftconvolve(img, psf, 'same') + (np.random.poisson(lam=25, size=img.s
 # Wrap data in an "Acqusition" instance
 acquisition = fd_data.Acquisition(data=img_blur, kernel=psf)
 
-# Initialize Tensorflow graph for 2-dimensional deconvolution 
+# Initialize TensorFlow graph for 2-dimensional deconvolution 
 algo = fd_restoration.RichardsonLucyDeconvolver(n_dims=img.ndim).initialize()
 
 # Run 30 RL deconvolution iterations
@@ -79,7 +79,7 @@ ax[2].set_title('Restoration using\nRichardson-Lucy')
 
 - [C. Elegans](python/examples/CElegans%20Deconvolution.ipynb) - Deconvolution of 712x672x104 acquisition
 - [Hollow Bars](python/examples/Hollow%20Bars%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
-- [Graph Export](python/examples/Algorithm%20Graph%20Export.ipynb) - Defining and exporting Tensorflow graphs
+- [Graph Export](python/examples/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
 
 ### Java
 
@@ -120,7 +120,7 @@ docker run -td -p 8888:8888 --name flowdec flowdec
 docker exec -it flowdec /bin/bash # Connect 
 ```
 
-The Flowdec dockerfile extends the [Tensorflow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
+The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
 
 
 ## TODO

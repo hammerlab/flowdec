@@ -2,6 +2,7 @@
 import tensorflow as tf
 import numpy as np
 
+
 def tf_print(t, transform=None):
     """Inject graph operation to print a tensors underlying value (or transformation of it)"""
     def log_value(x):
@@ -11,6 +12,7 @@ def tf_print(t, transform=None):
     with tf.control_dependencies([log_op]):
         r = tf.identity(t)
     return r
+
 
 def tf_observer(tensors, observer_fn):
     """Inject graph operation to observe but not alter tensor values
@@ -30,6 +32,7 @@ def tf_observer(tensors, observer_fn):
     with tf.control_dependencies([observe_op]):
         ts = [tf.identity(t) for t in tensors]
     return ts
+
 
 def pad_around_center(t, target_shape, mode='CONSTANT', constant_values=0):
     """Center tensor data within a (possibly) larger tensor

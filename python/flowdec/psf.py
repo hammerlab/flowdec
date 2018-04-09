@@ -1,5 +1,8 @@
+"""PSF Generator Module based on Fast Gibson Lanni Approximation
 
-
+This is the exact same implementation (used with permission from
+http://kmdouglass.github.io/posts/implementing-a-fast-gibson-lanni-psf-solver-in-python.html)
+"""
 import argparse
 from collections import OrderedDict
 
@@ -275,6 +278,12 @@ class GibsonLanni(PSF):
             # Evaluate the PSF at each value of r_pixel
             PSF[:,:, z_index] = PSF_interp(r_pixel.ravel()).reshape(size_y, size_x)
 
-        return PSF
+        # **All lines below are changes to original implementation** #
+
+        # Transform to [z, y, x] instead of [y, x, z]
+        PSF = np.moveaxis(PSF, 2, 0)
+
+        # Re-normalize to a max of 1
+        return PSF / np.max(PSF)
 
 

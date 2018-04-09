@@ -157,7 +157,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         real_domain_fft: Flag indicating whether or not to use the real or complex TF FFT functions
         epsilon: Minimum value below which interemdiate results will become 0 to avoid division by 
             small numbers
-        device: Tensorflow format device name onto which the majority of the operations should be
+        device: TensorFlow format device name onto which the majority of the operations should be
             placed (e.g. '/cpu:0', '/gpu:1'). If overriding this, not that you must also specify
             "allow_soft_placement 
     """
