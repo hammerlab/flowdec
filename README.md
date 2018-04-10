@@ -128,15 +128,15 @@ The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.doc
 
 ## References
 
-[1] D. Sage, L. Donati, F. Soulez, D. Fortun, G. Schmit, A. Seitz, R. Guiet, C. Vonesch, M. Unser
-    DeconvolutionLab2: An Open-Source Software for Deconvolution Microscopy
-    Methods - Image Processing for Biologists, 115, 2017.
-[2] J. Li, F. Xue and T. Blu
-    Fast and accurate three-dimensional point spread function computation for fluorescence microscopy
-    J. Opt. Soc. Am. A, vol. 34, no. 6, pp. 1029-1034, 2017.
-[3] Brandner, D. and Withers, G.
-    The Cell Image Library, CIL: 10106, 10107, and 10108. 
-    Available at http://www.cellimagelibrary.org. Accessed December 08, 2010.
+- [1] D. Sage, L. Donati, F. Soulez, D. Fortun, G. Schmit, A. Seitz, R. Guiet, C. Vonesch, M. Unser<br>
+    DeconvolutionLab2: An Open-Source Software for Deconvolution Microscopy<br>
+    Methods - Image Processing for Biologists, 115, 2017.<br>
+- [2] J. Li, F. Xue and T. Blu<br>
+    Fast and accurate three-dimensional point spread function computation for fluorescence microscopy<br>
+    J. Opt. Soc. Am. A, vol. 34, no. 6, pp. 1029-1034, 2017.<br>
+- [3] Brandner, D. and Withers, G.<br>
+    The Cell Image Library, CIL: 10106, 10107, and 10108.<br>
+    Available at http://www.cellimagelibrary.org. Accessed December 08, 2010.<br>
 
 ## TODO
 
