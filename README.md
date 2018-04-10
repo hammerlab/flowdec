@@ -54,7 +54,7 @@ kernel = gaussian_filter(kernel, sigma=1.)
 data = signal.fftconvolve(actual, kernel, mode='same')
 # data.shape = (50, 256, 256)
 
-# Run the deconvolution process, noting that deconvolution initialization is best kept separate from 
+# Run the deconvolution process and note that deconvolution initialization is best kept separate from 
 # execution since the "initialize" operation corresponds to creating a TensorFlow graph, which is a 
 # relatively expensive operation and should not be repeated across multiple executions
 algo = fd_restoration.RichardsonLucyDeconvolver(data.ndim).initialize()
