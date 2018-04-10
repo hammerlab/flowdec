@@ -32,8 +32,8 @@ def shift(acq, data_shift=None, kern_shift=None):
 def subset(acq, data_slice=None, kern_slice=None):
     """Apply slice operation to acquisition data"""
     return mutate(acq,
-        data_fn= None if not data_slice else lambda d: d[data_slice],
-        kern_fn= None if not kern_slice else lambda k: k[kern_slice]
+        data_fn=None if not data_slice else lambda d: d[data_slice],
+        kern_fn=None if not kern_slice else lambda k: k[kern_slice]
     )
 
 

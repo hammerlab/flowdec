@@ -1,5 +1,6 @@
 """ Dataset manager for fetching and representing pre-defined images shipping with this package """
 import os
+import os.path as osp
 import zipfile
 import flowdec
 import requests
@@ -12,16 +13,14 @@ logger = logging.getLogger(__name__)
 class Acquisition(object):
     """ Data model for measured quantities to be deconvolved """
 
-    def __init__(self, data, kernel, actual=None):
+    def __init__(self, data, kernel=None, actual=None):
         """New acquisition instance
         Args:
             data: Observed data; e.g. a measured image from a microscope
-            kernel: Kernel assumed to have been used in generating the observed data (i.e. a point spread function)
+            kernel: Optional kernel assumed to have been used in generating the observed data (i.e. a PSF)
             actual: Optional ground-truth data useful for synthetic tests and validation
         """
-        if data.ndim != kernel.ndim:
-            raise ValueError('Dimensions of data and kernel must match (i.e. both 1D, 2D, or 3D)')
-        if not data.ndim in [1, 2, 3]:
+        if data.ndim not in [1, 2, 3]:
             raise ValueError('Number of data and kernel dimensions must be 1, 2, or 3')
         self.data = data
         self.kernel = kernel
@@ -40,14 +39,14 @@ class Acquisition(object):
     def apply(self, fn, **kwargs):
         return Acquisition(
             data=fn(self.data, **kwargs),
-            kernel=fn(self.kernel, **kwargs),
+            kernel=None if self.kernel is None else fn(self.kernel, **kwargs),
             actual=None if self.actual is None else fn(self.actual, **kwargs)
         )
 
     def transform(self, fn, **kwargs):
-         return {
+        return {
             'data': fn(self.data, **kwargs),
-            'kernel': fn(self.kernel, **kwargs),
+            'kernel': None if self.kernel is None else fn(self.kernel, **kwargs),
             'actual': None if self.actual is None else fn(self.actual, **kwargs)
         }
 
@@ -166,8 +165,8 @@ def _load_external_dataset(name, gdrive_id, img_dirs=None):
         os.makedirs(data_dir, exist_ok=False)
 
     # Fetch zip archive containing data if not already present
-    if not os.path.exists(os.path.join(data_dir, name)):
-        zip_file = os.path.join(data_dir, name + '.zip')
+    if not os.path.exists(osp.join(data_dir, name)):
+        zip_file = osp.join(data_dir, name + '.zip')
         logger.info('Downloading archive for dataset "{}" (will only occur on first reference) ...'.format(name))
         _download_google_drive_file(gdrive_id, zip_file)
         logger.info('Download for dataset "{}" complete'.format(name))
@@ -176,25 +175,23 @@ def _load_external_dataset(name, gdrive_id, img_dirs=None):
         os.unlink(zip_file)
 
     # Load tif stacks into acquisition instance
-    data_dir = os.path.join(data_dir, name)
+    data_dir = osp.join(data_dir, name)
 
-    # If no subdirectories are given, assume the dataset has already been consolidated
-    # into individual tiff stacks
-    if img_dirs is None:
-        actp = os.path.join(data_dir, 'actual.tif')
-        return Acquisition(
-            data=io.imread(os.path.join(data_dir, 'data.tif')),
-            kernel=io.imread(os.path.join(data_dir, 'kernel.tif')),
-            actual=io.imread(actp) if os.path.exists(actp) else None
-        )
-    # Otherwise, assume tiff stacks exist in the given subdirectories as separate files
-    else:
-        actp = os.path.join(img_dirs['actual'], 'actual.tif') if 'actual' in img_dirs else None
-        return Acquisition(
-            data=load_img_stack(os.path.join(data_dir, img_dirs['data'], '*.tif')),
-            kernel=load_img_stack(os.path.join(data_dir, img_dirs['kernel'], '*.tif')),
-            actual=load_img_stack(os.path.join(data_dir, img_dirs['actual'], '*.tif')) if actp else None
-        )
+    def get_image(k):
+        # Load image for acquisition part based on per-directory separation as individual tif
+        # stacks if such a separation is defined
+        if img_dirs is not None:
+            if k not in img_dirs:
+                return None
+            path = osp.join(data_dir, img_dirs[k], '*.tif')
+            return load_img_stack(path)
+        # If no subdirectories are given, assume the dataset has already been consolidated
+        # into individual tif stacks
+        else:
+            path = osp.join(data_dir, k + '.tif')
+            return io.imread(path) if osp.exists(path) else None
+
+    return Acquisition(**{k: get_image(k) for k in ['data', 'kernel', 'actual']})
 
 
 def load_bars():
@@ -211,7 +208,14 @@ def load_bead():
     return _load_external_dataset('bead', gdrive_id, img_dirs)
 
 
+def load_neuron():
+    """Get data for "Purkinje Neuron" dataset"""
+    gdrive_id = '1QDrXTtkybKfKuaAzl7XmRWfOSrLVQR_H'
+    return _load_external_dataset('neuron', gdrive_id)
+
+
 CELEGANS_CHANNELS = ['CY3', 'DAPI', 'FITC']
+
 
 def load_celegans():
     """ Fetch C. Elegans dataset as 3 separate Acquisition instances, in a dict keyed by channel name
@@ -253,12 +257,10 @@ def _load_repo_dataset(name):
     if not os.path.exists(data_dir):
         raise ValueError('Dataset "{}" not found (path "{}" does not exist)'.format(name, data_dir))
 
-    actp = os.path.join(data_dir, 'actual.tif')
-    return Acquisition(
-        data=io.imread(os.path.join(data_dir, 'data.tif')),
-        kernel=io.imread(os.path.join(data_dir, 'kernel.tif')),
-        actual=io.imread(actp) if os.path.exists(actp) else None
-    )
+    return Acquisition(**{
+        k: (io.imread(osp.join(data_dir, k + '.tif')) if osp.exists(osp.join(data_dir, k + '.tif')) else None)
+        for k in ['data', 'kernel', 'actual']
+    })
 
 
 def bars_25pct():
@@ -270,7 +272,6 @@ def bead_25pct():
     """Load "Bead" dataset downsampled to 25% of original"""
     return _load_repo_dataset('bead-25pct')
 
-
-def bead_18pct():
-    """Load "Bead" dataset downsampled to 18% of original"""
-    return _load_repo_dataset('bead-18pct')
+def neuron_25pct():
+    """Load "Purkinje Neuron" dataset downsampled to 25% of original"""
+    return _load_repo_dataset('neuron-25pct')

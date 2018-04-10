@@ -155,12 +155,10 @@ class GibsonLanni(PSF):
 
         return parser
 
-
     def generate(self):
         import numpy as np
         import scipy.special
         from scipy.interpolate import interp1d
-
 
         # ################# #
         # Define Parameters #
@@ -190,7 +188,6 @@ class GibsonLanni(PSF):
 
         scaling_factor = NA * (3 * np.arange(1, num_basis + 1) - 2) * min_wavelength / wavelength
 
-
         # ############################# #
         # Create the coordinate systems #
         # ############################# #
@@ -212,7 +209,6 @@ class GibsonLanni(PSF):
 
         # Stage displacements away from best focus
         z = res_axial * np.arange(-size_z / 2, size_z /2) + res_axial / 2
-
 
         # ######################################################## #
         # Approximate the pupil phase with a Fourier-Bessel series #
@@ -238,7 +234,6 @@ class GibsonLanni(PSF):
         # Note the matrix transposes to get the dimensions correct.
         C, residuals, _, _ = np.linalg.lstsq(J.T, phase.T, rcond=None)
 
-
         # ############### #
         # Compute the PSF #
         # ############### #
@@ -259,7 +254,6 @@ class GibsonLanni(PSF):
 
         # Normalize to the maximum value
         PSF_rz /= np.max(PSF_rz)
-
 
         # ############################################################# #
         # Resample the PSF onto a rotationally-symmetric Cartesian grid #

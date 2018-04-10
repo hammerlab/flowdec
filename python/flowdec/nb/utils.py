@@ -109,6 +109,7 @@ def save_dataset(name, acq, path, dtype=np.float32):
     print('Exporting data for dataset "{}" to path {}'.format(name, p))
 
     io.imsave(os.path.join(p, 'data.tif'), acq.data.astype(dtype))
-    io.imsave(os.path.join(p, 'kernel.tif'), acq.kernel.astype(dtype))
+    if acq.kernel is not None:
+        io.imsave(os.path.join(p, 'kernel.tif'), acq.kernel.astype(dtype))
     if acq.actual is not None:
         io.imsave(os.path.join(p, 'actual.tif'), acq.actual.astype(dtype))

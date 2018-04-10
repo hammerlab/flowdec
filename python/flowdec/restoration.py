@@ -36,7 +36,6 @@ class DeconvolutionGraph(object):
         return self
 
 
-
 class Deconvolver(metaclass=abc.ABCMeta):
 
     def __init__(self, device):
@@ -93,13 +92,14 @@ def default_input_prep_fn(tensor_name, tensor):
 
 class FFTDeconvolver(Deconvolver):
 
-    def __init__(self, n_dims, pad_mode, pad_min,
+    def __init__(self, n_dims, pad_mode, pad_min, pad_fill,
         input_prep_fn, output_prep_fn,
         real_domain_fft, device):
         super(FFTDeconvolver, self).__init__(device)
         self.n_dims = n_dims
         self.pad_mode = pad_mode
         self.pad_min = pad_min
+        self.pad_fill = pad_fill
         self.input_prep_fn = input_prep_fn
         self.output_prep_fn = output_prep_fn
         self.real_domain_fft = real_domain_fft
@@ -146,6 +146,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         pad_min: Minimum padding to add to each dimension; should by array or list of numbers equal
             to extension in each dimension (e.g. for 3D data, [0, 0, 5] would do nothing to x and
             y padding but would force padding in z-direction to be at least 5)
+        pad_fill: Type of fill to use when padding images; one of ['REFLECT', 'SYMMETRIC', 'CONSTANT'];
+            see https://www.tensorflow.org/api_docs/python/tf/pad for more details
         input_prep_fn: Data preparation function to inject within computation graph.  Default is PSF 
             normalization function used to ensure PSF tensor sums to one
         output_prep_fn: Output preparation function to inject within computation graph (e.g.
@@ -161,11 +163,11 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             placed (e.g. '/cpu:0', '/gpu:1'). If overriding this, not that you must also specify
             "allow_soft_placement 
     """
-    def __init__(self, n_dims, pad_mode=OPM_LOG2, pad_min=None,
+    def __init__(self, n_dims, pad_mode=OPM_LOG2, pad_min=None, pad_fill='REFLECT',
         input_prep_fn=default_input_prep_fn, output_prep_fn=None, observer_fn=None,
         real_domain_fft=False, epsilon=1e-6, device=None):
         super(RichardsonLucyDeconvolver, self).__init__(
-            n_dims, pad_mode, pad_min, input_prep_fn, 
+            n_dims, pad_mode, pad_min, pad_fill, input_prep_fn,
             output_prep_fn, real_domain_fft, device
         )
         self.observer_fn = observer_fn
@@ -207,8 +209,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
   
             datat = tf.cond(
                 tf.equal(padmh, OPM_LOG2),
-                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode='REFLECT'),
-                lambda: pad_around_center(datah, pad_shape, mode='REFLECT')
+                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
+                lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
             )
 
             # Pad kernel (with zeros only) to equal dimensions of data tensor and run "circular"
