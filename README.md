@@ -60,7 +60,16 @@ data = signal.fftconvolve(actual, kernel, mode='same')
 algo = fd_restoration.RichardsonLucyDeconvolver(data.ndim).initialize()
 res = algo.run(fd_data.Acquisition(data=data, kernel=kernel), niter=30).data
 
-
+fig, axs = plt.subplots(1, 3)
+axs = axs.ravel()
+fig.set_size_inches(18, 12)
+center = tuple([slice(None), slice(10, -10), slice(10, -10)])
+titles = ['Original Image', 'Blurred Image', 'Reconstructed Image']
+for i, d in enumerate([actual, data, res]):
+    img = exposure.adjust_gamma(d[center].max(axis=0), gamma=.2)
+    axs[i].imshow(img, cmap='Spectral_r')
+    axs[i].set_title(titles[i])
+    axs[i].axis('off')
 ```
 
 ![Neuron Example](docs/images/neuron.png "Neuron Results")
@@ -70,9 +79,9 @@ res = algo.run(fd_data.Acquisition(data=data, kernel=kernel), niter=30).data
 
 ### Python 
 
-- [C. Elegans](python/examples/CElegans%20-Multiple%20Channel%20Example.ipynb) - Deconvolution of 712x672x104 acquisition for 3 separate channels
+- [C. Elegans](python/examples/CElegans%20-%20Multiple%20Channel%20Example.ipynb) - Deconvolution of 712x672x104 acquisition for 3 separate channels
 - [Astronaut](python/examples/Astronaut%20-%20Ringing%20Artifacts.ipynb) - Dealing with artifacts in deconvolved images
-- [Hollow Bars](python/examples/Hollow%20Bars%20-Synthetic%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
+- [Hollow Bars](python/examples/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
 - [Graph Export](python/examples/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
 
 ### Java
