@@ -82,6 +82,7 @@ for i, d in enumerate([actual, data, res]):
 - [C. Elegans](python/examples/CElegans%20-%20Multiple%20Channel%20Example.ipynb) - Deconvolution of 712x672x104 acquisition for 3 separate channels
 - [Astronaut](python/examples/Astronaut%20-%20Ringing%20Artifacts.ipynb) - Dealing with artifacts in deconvolved images
 - [Hollow Bars](python/examples/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
+- [Hollow Bars GPU Benchmarking](python/examples/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full Hollow Bars volume with GPU present
 - [Graph Export](python/examples/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
 
 ### Java
