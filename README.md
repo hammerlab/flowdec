@@ -13,9 +13,9 @@ Here are a few of the major advantages and disadvantages of Flowdec at the momen
 - **Point Spread Functions** - PSFs can be defined as json configuration files to be generated dynamically during the deconvolution process using a [Fast Gibson-Lanni Approximation Model](http://www.ee.cuhk.edu.hk/~jzli/MicroscPSF/) (which can also create Born & Wolf kernels as a degenerate case).
 - **GPU Accleration** - Executing [TensorFlow graphs on GPUs](https://www.tensorflow.org/programmers_guide/using_gpu) is trivial and will happen by default w/ Flowdec if you meet all of the TensorFlow requirements for this (i.e. CUDA Toolkit installed, Nvidia drivers, etc.).
 - **Performance** - There are other open source and commercial deconvolution libraries that run with *partial* GPU acceleration, which generally means that only FFT and iFFT operations run on GPUs while all other operations run on the CPU. For example, on a roughly 1000x1000x11 3D volume with a PSF of the same dimensions this means that execution times look like:
-    - CPU-Only Solutions: **10 minutes**
+    - CPU-only solutions: **10 minutes**
     - Other solutions with FFT/iFFT GPU acceleration: **~40 seconds**
-    - Flowdec/Tensorflow with full GPU acceleration: **~1 second**
+    - Flowdec/TensorFlow with full GPU acceleration: **~1 second**
 - **Signal Dimensions** - Flowdec can support 1, 2, or 3 dimensional images/signals.
 - **Multi-GPU Usage** - This has yet to be tested, but theoretically this is possible since TF can do it (and this [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/flowdec/examples/MultiGPUExample.java) is a start).
 - **Image Preprocessing** - A trickier part of deconvolution implementations is dealing with image padding and cropping necessary to use faster FFT implementations -- in Flowdec, image padding using the reflection of the image along each axis can be specified manually or by letting it automatically round up and pad to the nearest power of 2 (which will enable use of faster Cooley-Tukey algorithm instead of the Bluestein algorithm provided by Nvidia cuFFT used by TF).
