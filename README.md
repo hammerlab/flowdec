@@ -4,9 +4,9 @@
 
 Flowdec is designed to construct and execute TF graphs in python as well as use frozen, exported graphs from other languages (e.g. Java).
 
-Here are a few of the major advantages and disadvantages of Flowdec at the moment:
+Here are a few other features, advantages, and disadvantages of the project currently:
 
-*Advantages*
+*Highlights*
 
 - **Support for Windows, Mac, and Linux** - Because TensorFlow can run on these platforms, so can Flowdec.
 - **Client Support for Java, Go, C++, and Python** - Using Flowdec graphs from Python and Java has been tested, but theoretically they could also be used by any [TensorFlow API Client Libraries](https://www.tensorflow.org/api_docs/).
@@ -23,6 +23,7 @@ Here are a few of the major advantages and disadvantages of Flowdec at the momen
 
 *Disadvantages*
 
+- **No GUIs** - Flowdec is intended for use by those familiar with programming but some future work might include an ImageJ plugin (if there's interest in that).  For those looking for something more interactive, [imagej-ops](https://github.com/imagej/imagej-ops) is likely your best bet which currently supports the same PSF generation model used in Flowdec as well as Richardson Lucy deconvolution.  At the moment it doesn't include full GPU acceleration but that may be on the way as part of [imagej-ops-experiments](https://github.com/imagej/ops-experiments).  See this [github issue](https://github.com/hadim/DeconvolutionLab2/issues/1) for more details.
 - **No Blind Deconvolution** - Currently, nothing in this arena has been attempted but since much recent research on this subject is centered around solutions in deep learning, TensorFlow will hopefully make for a good platform in the future.
 
 ## Basic Usage
