@@ -131,7 +131,16 @@ def richardson_lucy(acquisition, niter=10, pad_mode=OPM_LOG2, session_config=Non
 class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
     """Richardson Lucy Deconvolution Algorithm
 
-    *Note: Comments throughout are in reference to the following implementations:
+    Implementation of iterative Richardson Lucy algorithm on a TensorFlow computational graph.
+
+    Some highlights of this implementation include:
+    - Circulant convolution (no linear convolution yet)
+    - Automatic, but configurable, padding along dimensions to next highest power of 2 for performance gains (
+        experiments show that deconvoling realistic volumes can take up to 4 times longer without this)
+    - Configurable domain for FFT operations (either real or complex); Real domain is faster/more memory
+        efficient but complex domain is typically more accurate (so it is the default setting)
+
+    *Note*: Comments throughout are in reference to the following implementations:
 
     Reference Implementations:
         - Matlab: https://svn.ecdf.ed.ac.uk/repo/ph/IGM/matlab/generic/images/deconvlucy.m
@@ -144,7 +153,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         n_dims: Rank of tensors to be used as inputs (i.e. number of dimensions)
         pad_mode: Padding mode for optimal FFT performance (defaults to powers of 2 i.e. 'log2' )
         pad_min: Minimum padding to add to each dimension; should by array or list of numbers equal
-            to extension in each dimension (e.g. for 3D data, [0, 0, 5] would do nothing to x and
+            to extension in each dimension (e.g. for 3D data, [5, 0, 0] would do nothing to x and
             y padding but would force padding in z-direction to be at least 5)
         pad_fill: Type of fill to use when padding images; one of ['REFLECT', 'SYMMETRIC', 'CONSTANT'];
             see https://www.tensorflow.org/api_docs/python/tf/pad for more details
@@ -160,8 +169,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         epsilon: Minimum value below which interemdiate results will become 0 to avoid division by 
             small numbers
         device: TensorFlow format device name onto which the majority of the operations should be
-            placed (e.g. '/cpu:0', '/gpu:1'). If overriding this, not that you must also specify
-            "allow_soft_placement 
+            placed (e.g. '/cpu:0', '/gpu:1'); if providing this, you must also *not* override the
+            default setting of "allow_soft_placement=True" in TF session configs
     """
     def __init__(self, n_dims, pad_mode=OPM_LOG2, pad_min=None, pad_fill='REFLECT',
         input_prep_fn=default_input_prep_fn, output_prep_fn=None, observer_fn=None,

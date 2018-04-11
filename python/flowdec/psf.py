@@ -4,6 +4,7 @@ This is the exact same implementation (used with permission from
 http://kmdouglass.github.io/posts/implementing-a-fast-gibson-lanni-psf-solver-in-python.html)
 """
 import argparse
+import json
 from collections import OrderedDict
 
 
@@ -134,8 +135,23 @@ class GibsonLanni(PSF):
             )
 
         # Assign configuration by resolving default arguments and those passed in
-        self.config = OrderedDict({a[0]:a[1] for a in args})
+        self.config = OrderedDict({a[0]: a[1] for a in args})
         self.config.update(kwargs)
+
+    def to_json(self):
+        return json.dumps(self.config)
+
+    def save(self, path):
+        """Save PSF configuration as json in the given file"""
+        with open(path, 'w') as fd:
+            json.dump(self.config, fd, indent=4, sort_keys=True)
+        return self
+
+    @staticmethod
+    def load(path):
+        """Load a PSF object from a json configuration file"""
+        with open(path, 'r') as fd:
+            return GibsonLanni(**json.load(fd))
 
     @staticmethod
     def get_arg_parser():

@@ -69,6 +69,7 @@ def next_slice(ax):
 
 
 def plot_img_preview(img, zstart=None, zstop=None, cmap='viridis', proj_figsize=(12,4), **kwargs):
+    """Plot z-projection of volume as well as individual z-slices"""
     plt.imshow(img.max(axis=0), cmap=cmap)
     plt.gcf().set_size_inches(proj_figsize)
     plt.gca().set_title('Max Projection (Over {} Z-Slices)'.format(img.shape[0]))
@@ -82,6 +83,7 @@ rotate_xz = partial(rotate, axes=(0,2))
 
 
 def plot_rotations(img, projection=lambda img: img.max(axis=0), cmap='viridis', figsize=(12,12)):
+    """Plot the same volume in a 3x3 grid with 0, 45, and 90 degree rotations around each axis"""
     fig, axs = plt.subplots(3, 3)
     fig.set_size_inches(figsize)
     rotate_fns = [rotate_xy, rotate_yz, rotate_xz]
@@ -109,7 +111,6 @@ def save_dataset(name, acq, path, dtype=np.float32):
     print('Exporting data for dataset "{}" to path {}'.format(name, p))
 
     io.imsave(os.path.join(p, 'data.tif'), acq.data.astype(dtype))
-    if acq.kernel is not None:
-        io.imsave(os.path.join(p, 'kernel.tif'), acq.kernel.astype(dtype))
+    io.imsave(os.path.join(p, 'kernel.tif'), acq.kernel.astype(dtype))
     if acq.actual is not None:
         io.imsave(os.path.join(p, 'actual.tif'), acq.actual.astype(dtype))

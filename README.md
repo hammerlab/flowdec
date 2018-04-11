@@ -8,25 +8,28 @@ Here are a few of the major advantages and disadvantages of Flowdec at the momen
 
 *Advantages*
 
-- **Support for Windows, Mac, and Linux** - Because TensorFlow can run on these platforms, so can Flowdec
-- **Client Support for Java, Go, C++, and Python** - Using Flowdec graphs from Python and Java has been tested, but theoretically they could also be used by any [TensorFlow API Client Libraries](https://www.tensorflow.org/api_docs/)
-- **GPU Accleration** - Executing [TensorFlow graphs on GPUs](https://www.tensorflow.org/programmers_guide/using_gpu) is trivial and will happen by default w/ Flowdec if you meet all of the TensorFlow requirements for this (i.e. CUDA Toolkit installed, Nvidia drivers, etc.)
-- **Performance** - There are some other similar open source solutions that run *partially* with GPU acceleration, though this generally means that only FFT and iFFT operations run on GPUs while all other operations run on the CPU -- Experiments with Flowdec show that this means that the same 3D image may take ~8 mins to run on a single CPU, ~40s to run with another open source solution using only FFT/iFFT GPU accleration, and ~1s with Flowdec/TensorFlow using GPU accleration for all operations.
-- **Signal Dimensions** - Flowdec can support 1, 2, or 3 dimensional images/signals
-- **Multi-GPU Usage** - This has yet to be tested, but theoretically this is possible since TF can do it (and this [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) is a start)
+- **Support for Windows, Mac, and Linux** - Because TensorFlow can run on these platforms, so can Flowdec.
+- **Client Support for Java, Go, C++, and Python** - Using Flowdec graphs from Python and Java has been tested, but theoretically they could also be used by any [TensorFlow API Client Libraries](https://www.tensorflow.org/api_docs/).
+- **Point Spread Functions** - PSFs can be defined as json configuration files to be generated dynamically during the deconvolution process using a [Fast Gibson-Lanni Approximation Model](http://www.ee.cuhk.edu.hk/~jzli/MicroscPSF/) (which can also create Born & Wolf kernels as a degenerate case).
+- **GPU Accleration** - Executing [TensorFlow graphs on GPUs](https://www.tensorflow.org/programmers_guide/using_gpu) is trivial and will happen by default w/ Flowdec if you meet all of the TensorFlow requirements for this (i.e. CUDA Toolkit installed, Nvidia drivers, etc.).
+- **Performance** - There are other open source and commercial deconvolution libraries that run with *partial* GPU acceleration, which generally means that only FFT and iFFT operations run on GPUs while all other operations run on the CPU. For example, on a roughly 1000x1000x11 3D volume with a PSF of the same dimensions this means that execution times look like:
+    - CPU-Only Solutions: **10 minutes**
+    - Other solutions with FFT/iFFT GPU acceleration: **~40 seconds**
+    - Flowdec/Tensorflow with full GPU acceleration: **~1 second**
+- **Signal Dimensions** - Flowdec can support 1, 2, or 3 dimensional images/signals.
+- **Multi-GPU Usage** - This has yet to be tested, but theoretically this is possible since TF can do it (and this [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/tfdecon/examples/MultiGPUExample.java) is a start).
 - **Image Preprocessing** - A trickier part of deconvolution implementations is dealing with image padding and cropping necessary to use faster FFT implementations -- in Flowdec, image padding using the reflection of the image along each axis can be specified manually or by letting it automatically round up and pad to the nearest power of 2 (which will enable use of faster Cooley-Tukey algorithm instead of the Bluestein algorithm provided by Nvidia cuFFT used by TF).
 - **Visualizing Iterations** - Another difficulty with iterative deconvolution algorithms is in determining when they should stop.  With Richardson Lucy, this is usually done somewhat subjectively based on visualizing results for different iteration counts and Flowdec at least helps with this by letting ```observer``` functions be given that take intermediate results of the deconvolution process to be written out to image sequences or stacks for manual inspection.  Future work may include using [Tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard) to do this instead but for now, it has been difficult to get image summaries working within TF "while" loops.
 
 *Disadvantages*
 
-- **Point Spread Functions** - Flowdec does not yet generate point spread functions so these must be built and supplied by something such as [PSFGenerator](http://bigwww.epfl.ch/algorithms/psfgenerator/).
 - **No Blind Deconvolution** - Currently, nothing in this arena has been attempted but since much recent research on this subject is centered around solutions in deep learning, TensorFlow will hopefully make for a good platform in the future.
 
 ## Basic Usage
 
 Here is a basic example demonstrating how Flowdec can be used in a single 3D image deconvolution:
 
-See full example notebook [here](python/examples/Neuron%20-%203D%20Deconvolution.ipynb)
+*See full example notebook [here](python/examples/notebooks/Neuron%20-%203D%20Deconvolution.ipynb)*
 
 ```python
 %matplotlib inline
@@ -75,15 +78,37 @@ for i, d in enumerate([actual, data, res]):
 ![Neuron Example](docs/images/neuron.png "Neuron Results")
 
 
-## More Examples
+As a more realistic use case, here is an example showing how a point spread function configuration can be used in a headless deconvolution:
+
+*See full deconvolution script [here](python/examples/scripts/deconvolution.py)*
+
+```bash
+# Generate a configuration file containing PSF parameters (see flowdec.psf module for more details)
+echo '{"na": 0.75, "wavelength": 0.425, "size_z": 32, "size_x": 64, "size_y": 64}' > /tmp/psf.json
+
+# Invoke deconvolution script with the above PSF configuration and an input dataset to deconvolve
+python examples/scripts/deconvolution.py \
+--data-path=flowdec/datasets/bars-25pct/data.tif \
+--psf-config-path=/tmp/psf.json \
+--output-path=/tmp/result.tif \
+--n-iter=25 --log-level=DEBUG
+> DEBUG:Loaded data with shape (32, 64, 64) and psf with shape (32, 64, 64)
+> INFO:Beginning deconvolution of data file "flowdec/datasets/bars-25pct/data.tif"
+> INFO:Deconvolution complete (in 7.427 seconds)
+> INFO:Result saved to "/tmp/result.tif"
+```
+
+## Examples
 
 ### Python 
 
-- [C. Elegans](python/examples/CElegans%20-%20Multiple%20Channel%20Example.ipynb) - Deconvolution of 712x672x104 acquisition for 3 separate channels
-- [Astronaut](python/examples/Astronaut%20-%20Ringing%20Artifacts.ipynb) - Dealing with artifacts in deconvolved images
-- [Hollow Bars](python/examples/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
-- [Hollow Bars GPU Benchmarking](python/examples/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full Hollow Bars volume with GPU present
-- [Graph Export](python/examples/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
+- [Neuron](python/examples/notebooks/Neuron%20-%203D%20Deconvolution.ipynb) - Deconvolution of a natural 3D image with synthetic point spread function
+- [C. Elegans](python/examples/notebooks/CElegans%20-%20Multiple%20Channel%20Example.ipynb) - Deconvolution of 712x672x104 acquisition for 3 separate channels
+- [Astronaut](python/examples/notebooks/Astronaut%20-%20Ringing%20Artifacts.ipynb) - Dealing with artifacts in deconvolved images
+- [Hollow Bars](python/examples/notebooks/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
+- [Hollow Bars GPU Benchmarking](python/examples/notebooks/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full Hollow Bars volume with GPU-enabled system
+- [Graph Export](python/examples/notebooks/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
+- [Command Line Interface](python/examples/scripts/deconvolution.py) - CLI for executing single deconvolutions with either a pre-defined or dynamically generated point spread function
 
 ### Java
 
@@ -140,7 +165,6 @@ The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.doc
 
 ## TODO
 
-- Cleanup python scripting examples
 - Figure out how to specify orientation of z-stacks for PSF generator (and which direction test datasets have)
     - Research coverslip thickness and working distance inputs
 - Add and test java within docker image: ```apt-get install -y default-jdk maven```
