@@ -105,8 +105,8 @@ python examples/scripts/deconvolution.py \
 - [Neuron](python/examples/notebooks/Neuron%20-%203D%20Deconvolution.ipynb) - Deconvolution of a natural 3D image with synthetic point spread function
 - [C. Elegans](python/examples/notebooks/CElegans%20-%20Multiple%20Channel%20Example.ipynb) - Deconvolution of 712x672x104 acquisition for 3 separate channels
 - [Astronaut](python/examples/notebooks/Astronaut%20-%20Ringing%20Artifacts.ipynb) - Dealing with artifacts in deconvolved images
-- [Hollow Bars](python/examples/notebooks/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of 256x256x128 (rows x cols x z) synthetic data
-- [Hollow Bars GPU Benchmarking](python/examples/notebooks/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full Hollow Bars volume with GPU-enabled system
+- [Hollow Bars](python/examples/notebooks/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of downsampled 64x64x32 synthetic volume (as a CPU-friendly example)
+- [Hollow Bars GPU Benchmarking](python/examples/notebooks/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full 256x256x128 volume with GPU-enabled system
 - [Graph Export](python/examples/notebooks/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
 - [Command Line Interface](python/examples/scripts/deconvolution.py) - CLI for executing single deconvolutions with either a pre-defined or dynamically generated point spread function
 
