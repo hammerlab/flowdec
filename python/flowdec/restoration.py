@@ -2,7 +2,8 @@
 import abc
 import tensorflow as tf
 from flowdec import fft_utils_tf
-from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, optimize_dims, fftshift, ifftshift
+from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, PADF_REFLECT
+from flowdec.fft_utils_tf import optimize_dims,  ifftshift
 from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_print, tf_observer
 
 
@@ -69,7 +70,7 @@ class Deconvolver(metaclass=abc.ABCMeta):
 
         with tf.Session(config=session_config, graph=self.graph.tf_graph) as sess:
             data_dict = {self.graph.inputs[k]:v for k, v in acquisition.to_feed_dict().items()}
-            args_dict = {self.graph.inputs[k]:v for k, v in input_kwargs.items()}
+            args_dict = {self.graph.inputs[k]:v for k, v in input_kwargs.items() if v is not None}
             res = sess.run(self.graph.outputs, feed_dict={**data_dict, **args_dict})
             return res
 
@@ -172,7 +173,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             placed (e.g. '/cpu:0', '/gpu:1'); if providing this, you must also *not* override the
             default setting of "allow_soft_placement=True" in TF session configs
     """
-    def __init__(self, n_dims, pad_mode=OPM_LOG2, pad_min=None, pad_fill='REFLECT',
+    def __init__(self, n_dims, pad_mode=OPM_LOG2, pad_min=None, pad_fill=PADF_REFLECT,
         input_prep_fn=default_input_prep_fn, output_prep_fn=None, observer_fn=None,
         real_domain_fft=False, epsilon=1e-6, device=None):
         super(RichardsonLucyDeconvolver, self).__init__(
@@ -183,23 +184,29 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         self.epsilon = epsilon
 
     def run(self, acquisition, niter, session_config=None):
-        res = self._run(
-            acquisition, dict(niter=niter, pad_mode=self.pad_mode), 
-            session_config=session_config)
-        return DeconvolutionResult(res['result'], info=None)
+        input_kwargs = dict(niter=niter, pad_mode=self.pad_mode, pad_min=self.pad_min)
+        res = self._run(acquisition, input_kwargs, session_config=session_config)
+        return DeconvolutionResult(res['result'], info={k: v for k, v in res.items() if k != 'result'})
 
     def _build_tf_graph(self):
         niter = self._get_niter()
-        padmh = tf.placeholder(tf.string, name='padding_mode')
+
+        # Pad mode argument (string like 'log2' or 'none')
+        padmodh = tf.placeholder_with_default(OPM_LOG2, (), name='pad_mode')
+
+        # Minimum padding argument, defaults to zeros
+        padminh = tf.placeholder_with_default(
+            tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
+
         # Data and kernel should have shapes (z, height, width)
         datah = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='data'))
         kernh = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='kernel'))
 
         # Add assertion operations to validate padding mode and data/kernel dimensions
-        flag_pad_mode = tf.stack([tf.equal(padmh, OPM_LOG2), tf.equal(padmh, OPM_NONE)], axis=0)
+        flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_NONE)], axis=0)
         assert_pad_mode = tf.assert_greater(
                 tf.reduce_sum(tf.cast(flag_pad_mode, tf.int32)), 0,
-                message='Pad mode not valid', data=[padmh])
+                message='Pad mode not valid', data=[padmodh])
 
         flag_shapes = tf.shape(datah) - tf.shape(kernh)
         assert_shapes = tf.assert_greater_equal(
@@ -211,13 +218,9 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             # If configured to do so, expand dimensions of data matrix to power of 2 
             # (after adding a minimum padding as well, if given) to avoid use of
             # Bluestein algorithm in favor of significantly faster Cooley-Tukey FFT
-            if self.pad_min is None:
-                pad_shape = tf.shape(datah)
-            else:
-                pad_shape = tf.shape(datah) + tf.constant(self.pad_min, dtype=tf.int32)
-  
+            pad_shape = tf.shape(datah) + padminh
             datat = tf.cond(
-                tf.equal(padmh, OPM_LOG2),
+                tf.equal(padmodh, OPM_LOG2),
                 lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
                 lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
             )
@@ -276,8 +279,16 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         # Wrap output in configured post-processing functions (if any)
         result = tf.identity(self._wrap_output(result, {'data': datah, 'kernel': kernh}), name='result')
 
-        inputs = {'niter': niter, 'data': datah, 'kernel': kernh, 'pad_mode': padmh}
-        outputs = {'result': result}
+        inputs = {
+            'niter': niter, 'data': datah, 'kernel': kernh,
+            'pad_mode': padmodh, 'pad_min': padminh
+        }
+        outputs = {
+            'result': result,
+            'data_shape': tf.shape(datah), 'kern_shape': tf.shape(kernh),
+            'pad_shape': pad_shape, 'pad_mode': padmodh,
+            'pad_min': padminh
+        }
 
         return inputs, outputs
 

@@ -3,6 +3,7 @@ package org.hammerlab.flowdec;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 import org.tensorflow.Tensor;
@@ -11,7 +12,12 @@ import org.tensorflow.framework.ConfigProto;
 
 public class Flowdec {
 
-	private static final String DEFAULT_PAD_MODE = "log2";
+	static final String DEFAULT_RESULT_TENSOR_KEY = "result";
+	
+	// See: https://github.com/tensorflow/tensorflow/blob/r1.6/tensorflow/python/saved_model/signature_constants.py
+	static final String DEFAULT_SERVING_SIGNATURE_DEF_KEY = "serving_default";
+	
+	static final String DEFAULT_SERVING_KEY = "serve";
 	
 	static Path getProjectDir() {
 		return Paths.get("..", "..").toAbsolutePath().normalize();
@@ -106,14 +112,13 @@ public class Flowdec {
 				.addInput("data", data)
 				.addInput("kernel", kernel)
 				.addInput("niter", Tensors.create(niter))
-				.addInput("pad_mode", Tensors.create(DEFAULT_PAD_MODE))
 				.addOutput("result");
 			
 			if (this.path.isPresent()) {
 				builder = builder.setModelPath(this.path.get());
 			} else {
 				Path modelPath = Flowdec.getProjectTensorFlowDir()
-						.resolve("richardson-lucy-" + DOMAIN_TYPE + "-" + ndims + "d")
+						.resolve("richardsonlucy-" + DOMAIN_TYPE + "-" + ndims + "d")
 						.normalize()
 						.toAbsolutePath();
 				builder = builder.setModelPath(modelPath);
@@ -129,6 +134,74 @@ public class Flowdec {
 		}
 
 
+	}
+	
+	
+	public static class TensorResult {
+		
+		private Map<String, Tensor<?>> data;
+		
+		public TensorResult(Map<String, Tensor<?>> data) {
+			this.data = data;
+		}
+		
+		public Tensor<?> getTensor(String name){
+			if (this.data.isEmpty()) {
+				throw new IllegalStateException(
+						"No data found in TF graph results");
+			}
+			if (!this.data.containsKey(name)) {
+				throw new IllegalStateException("Failed to find result '" + 
+						name + "' in TF Graph results");
+			}
+			return this.data.get(name);
+		}
+		
+		public TensorData data() {
+			return this.data(DEFAULT_RESULT_TENSOR_KEY);
+		}
+		
+		public TensorData data(String tensor) {
+			return new TensorData(this.getTensor(tensor));
+		}
+		
+	}
+	
+	public static class TensorData {
+		private final Tensor<?> data;
+
+		public TensorData(Tensor<?> data) {
+			super();
+			this.data = data;
+		}
+
+		protected float[][] float2d() {
+			Tensor<Float> res = this.data.expect(Float.class);
+			if (res.shape().length != 2) {
+				throw new IllegalStateException("Tensor result has " + 
+						res.shape().length + " dimensions but exactly 2 were expected");
+			}
+			int x = (int) res.shape()[0];
+			int y = (int) res.shape()[1];
+			float[][] arr = new float[x][y];
+			res.copyTo(arr);
+			return arr;
+		}
+		
+		public float[][][] float3d() {
+			Tensor<Float> res = this.data.expect(Float.class);
+			if (res.shape().length != 3) {
+				throw new IllegalStateException("Tensor result has " + 
+						res.shape().length + " dimensions but exactly 3 were expected");
+			}
+			int z = (int) res.shape()[0];
+			int x = (int) res.shape()[1];
+			int y = (int) res.shape()[2];
+			float[][][] arr = new float[z][x][y];
+			res.copyTo(arr);
+			return arr;
+		}
+		
 	}
 	
 }

@@ -5,6 +5,10 @@ OPM_LOG2 = 'log2'
 OPM_NONE = 'none'
 OPTIMAL_PAD_MODES = [OPM_NONE, OPM_LOG2]
 
+PADF_REFLECT = 'REFLECT'
+PADF_SYMMETRIC = 'SYMMETRIC'
+PADF_ZERO = 'CONSTANT'
+
 
 def get_fft_tf_fns(n_dims, real_domain_only=True):
     """Determine which TF functions should be used for FFT based on number of dimensions in data.
