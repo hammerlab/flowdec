@@ -1,7 +1,7 @@
 package org.hammerlab.flowdec;
 
+import org.hammerlab.flowdec.Flowdec.TensorResult;
 import org.hammerlab.flowdec.FlowdecData.Acquisition;
-import org.hammerlab.flowdec.FlowdecResults.TFDeconResult;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -22,8 +22,7 @@ public class FlowdecTest extends TestCase {
 	 */
 	public void testGraphLoad() {
 		Flowdec.richardsonLucy()
-			.task2d(new float[10][10], new float[10][10], 10)
-			.processor();
+			.task2d(new float[10][10], new float[10][10], 10);
 	}
 
 	/**
@@ -32,7 +31,7 @@ public class FlowdecTest extends TestCase {
 	public void testGraphExecution() {
 		Flowdec.richardsonLucy()
 			.task2d(new float[10][10], new float[10][10], 10)
-			.processor().run();
+			.run();
 	}
 
 	/**
@@ -41,9 +40,9 @@ public class FlowdecTest extends TestCase {
 	public void testDeconvolve2D() {
 		Acquisition acq = FlowdecData.getDataset("bars-25pct");
 
-		TFDeconResult res = Flowdec.richardsonLucy()
+		TensorResult res = Flowdec.richardsonLucy()
 				.task2d(IJUtils.toFloatArray(acq.data)[0], 
-						IJUtils.toFloatArray(acq.kernel)[0], 10).processor().call();
+						IJUtils.toFloatArray(acq.kernel)[0], 10).call();
 
 		res.data().float2d();
 	}
@@ -53,8 +52,8 @@ public class FlowdecTest extends TestCase {
 	 */
 	public void testDeconvolve3D() {
 		Acquisition acq = FlowdecData.getDataset("bars-25pct");
-		TFDeconResult res = Flowdec.richardsonLucy()
-				.task3d(IJUtils.toFloatArray(acq.data), IJUtils.toFloatArray(acq.kernel), 10).processor().call();
+		TensorResult res = Flowdec.richardsonLucy()
+				.task3d(IJUtils.toFloatArray(acq.data), IJUtils.toFloatArray(acq.kernel), 10).call();
 
 		float[][][] data = res.data().float3d();
 		IJUtils.toImage(data).show();

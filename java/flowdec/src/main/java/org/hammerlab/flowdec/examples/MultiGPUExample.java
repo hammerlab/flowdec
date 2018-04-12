@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.hammerlab.flowdec.IJUtils;
 import org.hammerlab.flowdec.FlowdecTask;
+import org.hammerlab.flowdec.IJUtils;
 import org.tensorflow.Tensors;
 import org.tensorflow.framework.ConfigProto;
 
@@ -65,8 +65,7 @@ public class MultiGPUExample {
 					Tensors.create(nIterations)
 				)
 				.setDevice("/gpu:" + (ct.incrementAndGet() % numGpus))
-				.build().processor()
-				.call()
+				.build().call()
 				.data().float3d()
 			).collect(Collectors.toList());
 		

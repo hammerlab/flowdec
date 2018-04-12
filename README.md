@@ -51,7 +51,7 @@ actual = fd_data.neuron_25pct().data
 kernel = np.zeros_like(actual)
 for offset in [0, 1]:
     kernel[tuple((np.array(kernel.shape) - offset) // 2)] = 1
-kernel = gaussian_filter(kernel, sigma=1.)
+kernel = ndimage.gaussian_filter(kernel, sigma=1.)
 # kernel.shape = (50, 256, 256)
 
 # Convolve the original image with our fake PSF
