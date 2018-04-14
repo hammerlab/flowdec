@@ -13,6 +13,7 @@ class DeconvolutionResult(object):
         self.data = data
         self.info = info
 
+
 class DeconvolutionGraph(object):
 
     def __init__(self, tf_graph, inputs, outputs):
@@ -23,7 +24,7 @@ class DeconvolutionGraph(object):
     def save(self, export_dir, save_as_text=True):
         signature = tf.saved_model.signature_def_utils.build_signature_def(
             inputs={k: tf.saved_model.utils.build_tensor_info(v) for k, v in self.inputs.items()},
-            outputs = {k: tf.saved_model.utils.build_tensor_info(v) for k, v in self.outputs.items()}
+            outputs={k: tf.saved_model.utils.build_tensor_info(v) for k, v in self.outputs.items()}
         )
 
         builder = tf.saved_model.builder.SavedModelBuilder(export_dir)
@@ -215,7 +216,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
 
         with tf.control_dependencies([assert_pad_mode, assert_shapes]):
 
-            # If configured to do so, expand dimensions of data matrix to power of 2 
+            # If configured to do so, expand dimensions of data matrix to power of 2
             # (after adding a minimum padding as well, if given) to avoid use of
             # Bluestein algorithm in favor of significantly faster Cooley-Tukey FFT
             pad_shape = tf.shape(datah) + padminh
@@ -244,7 +245,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         # Initialize resulting deconvolved image -- there are several sensible choices for this like the 
         # original image or constant arrays, but some experiments show this to be better, and other 
         # implementations doing the same are "Basic Matlab" and "Scikit-Image" (see class notes for links)
-        decon = .5 * tf.ones_like(datat, dtype=self.dtype)
+        decon = tf.identity(.5 * tf.ones_like(datat, dtype=self.dtype), name='deconvolution')
 
         def cond(i, decon):
             return i <= niter
@@ -258,7 +259,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             conv1 = conv(decon, kern_fft)
 
             # High-pass filter to avoid division by very small numbers (see DeconvolutionLab2)
-            blur1 = tf.where(conv1 < self.epsilon, tf.zeros_like(datat), datat / conv1)
+            blur1 = tf.where(conv1 < self.epsilon, tf.zeros_like(datat), datat / conv1, name='blur1')
 
             conv2 = conv(blur1, kern_fft_conj)
 

@@ -27,7 +27,6 @@ if __name__ == '__main__':
             ndims, pad_mode='log2', real_domain_fft=(domain == 'real')
         ).initialize()
 
-        #algo.graph.save(export_dir, save_as_text=True)
         algo.graph.save(export_dir, save_as_text=False)
 
 # rsync -rP ~/repos/hammer/flowdec/tensorflow/* ~/repos/imagej/ops-experiments/ops-experiments-tensorflow/src/main/resources/tensorflow/graphs/

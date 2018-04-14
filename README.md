@@ -108,6 +108,7 @@ python examples/scripts/deconvolution.py \
 - [Astronaut](python/examples/notebooks/Astronaut%20-%20Ringing%20Artifacts.ipynb) - Dealing with artifacts in deconvolved images
 - [Hollow Bars](python/examples/notebooks/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of downsampled 64x64x32 synthetic volume (as a CPU-friendly example)
 - [Hollow Bars GPU Benchmarking](python/examples/notebooks/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full 256x256x128 volume with GPU-enabled system
+- [DeconvolutionLab2 Comparison](python/examples/notebooks/DeconvolutionLab2%20-%20Benchmarking.ipynb) - Comparing execution times between [DeconvolutionLab2](http://bigwww.epfl.ch/deconvolution/deconvolutionlab2/) and Flowdec
 - [Graph Export](python/examples/notebooks/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
 - [Command Line Interface](python/examples/scripts/deconvolution.py) - CLI for executing single deconvolutions with either a pre-defined or dynamically generated point spread function
 
