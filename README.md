@@ -153,6 +153,10 @@ docker exec -it flowdec /bin/bash # Connect
 
 The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
 
+## Acknowledgements
+
+Thanks to Kyle Douglass for explaining some of the finer aspects of this Python [Gibson-Lanni PSF generator](http://kmdouglass.github.io/posts/implementing-a-fast-gibson-lanni-psf-solver-in-python.html), Jizhou Li for helping to better understand that diffraction model, Hadrien Mary for giving great context on the state of open-source deconvolution libraries, and Brian Northan for lending great advice/context on library performance, blind deconvolution and how point spread functions work in general.
+
 ## References
 
 - [1] D. Sage, L. Donati, F. Soulez, D. Fortun, G. Schmit, A. Seitz, R. Guiet, C. Vonesch, M. Unser<br>
