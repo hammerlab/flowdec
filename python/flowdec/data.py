@@ -208,6 +208,12 @@ def load_bead():
     return _load_external_dataset('bead', gdrive_id, img_dirs)
 
 
+def load_microtubules():
+    """Get data for "Microtubules" dataset"""
+    gdrive_id = '1YFH2Fugii-owyR1YVkeSmR0Z0izp7EwS'
+    return _load_external_dataset('microtubules', gdrive_id)
+
+
 def load_neuron():
     """Get data for "Purkinje Neuron" dataset"""
     gdrive_id = '1QDrXTtkybKfKuaAzl7XmRWfOSrLVQR_H'
