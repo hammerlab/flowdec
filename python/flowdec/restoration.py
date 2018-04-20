@@ -2,9 +2,17 @@
 import abc
 import tensorflow as tf
 from flowdec import fft_utils_tf
-from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, PADF_REFLECT
-from flowdec.fft_utils_tf import optimize_dims,  ifftshift
+from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, OPTIMAL_PAD_MODES, PADF_REFLECT, PAD_FILL_MODES
+from flowdec.fft_utils_tf import optimize_dims,  ifftshift, fftshift
 from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_print, tf_observer
+
+SMODE_CONSTANT = 'CONSTANT'
+SMODE_INPUT = 'INPUT'
+START_MODES = [SMODE_CONSTANT, SMODE_INPUT]
+
+DEFAULT_PAD_MODE = OPM_LOG2
+DEFAULT_PAD_FILL = PADF_REFLECT
+DEFAULT_START_MODE = SMODE_CONSTANT
 
 
 class DeconvolutionResult(object):
@@ -94,18 +102,29 @@ def default_input_prep_fn(tensor_name, tensor):
 
 class FFTDeconvolver(Deconvolver):
 
-    def __init__(self, n_dims, pad_mode, pad_min, pad_fill,
+    def __init__(self, n_dims, pad_mode, pad_min, pad_fill, start_mode,
         input_prep_fn, output_prep_fn,
         real_domain_fft, device):
         super(FFTDeconvolver, self).__init__(device)
         self.n_dims = n_dims
-        self.pad_mode = pad_mode
         self.pad_min = pad_min
-        self.pad_fill = pad_fill
+        self.pad_mode = pad_mode.upper()
+        self.pad_fill = pad_fill.upper()
+        self.start_mode = start_mode.upper()
         self.input_prep_fn = input_prep_fn
         self.output_prep_fn = output_prep_fn
         self.real_domain_fft = real_domain_fft
         self.fft_dtype = tf.float32 if real_domain_fft else tf.complex64
+
+        # Validate arguments
+        if self.pad_mode not in OPTIMAL_PAD_MODES:
+            raise ValueError('Pad mode "{}" invalid; Should be one of {}'.format(self.pad_mode, OPTIMAL_PAD_MODES))
+        if self.pad_fill not in PAD_FILL_MODES:
+            raise ValueError('Pad fill "{}" invalid; Should be one of {}'.format(self.pad_fill, PAD_FILL_MODES))
+        if self.start_mode not in START_MODES:
+            raise ValueError('Start mode "{}" invalid; Should be one of {}'.format(self.start_mode, START_MODES))
+        if self.pad_min is not None and len(self.pad_min) != self.n_dims:
+            raise ValueError('Pad minimum "{}" invalid; Expecting exactly {} values'.format(self.pad_min, self.n_dims))
 
         # Because TF FFT implementations all only work with 32-bit floats the spatial inputs/outputs in the
         # constructed graph are constrained to this type for now (but it could change in the future)
@@ -125,7 +144,7 @@ class FFTIterativeDeconvolver(FFTDeconvolver):
         return tf.placeholder(tf.int32, shape=(), name='niter')
 
 
-def richardson_lucy(acquisition, niter=10, pad_mode=OPM_LOG2, session_config=None, **kwargs):
+def richardson_lucy(acquisition, niter=10, pad_mode=DEFAULT_PAD_MODE, session_config=None, **kwargs):
     algo = RichardsonLucyDeconvolver(acquisition.data.ndim, pad_mode=pad_mode, **kwargs)
     return algo.initialize().run(acquisition, niter, session_config=session_config).data
 
@@ -142,24 +161,29 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
     - Configurable domain for FFT operations (either real or complex); Real domain is faster/more memory
         efficient but complex domain is typically more accurate (so it is the default setting)
 
-    *Note*: Comments throughout are in reference to the following implementations:
+    Note: Comments throughout are in reference to the following implementations:
 
     Reference Implementations:
         - Matlab: https://svn.ecdf.ed.ac.uk/repo/ph/IGM/matlab/generic/images/deconvlucy.m
         - Basic Matlab: https://en.wikipedia.org/wiki/Talk:Richardson%E2%80%93Lucy_deconvolution
         - Scikit-Image: https://github.com/scikit-image/scikit-image/blob/master/skimage/restoration/deconvolution.py
         - DeconvolutionLab2: https://github.com/hadim/DeconvolutionLab2/blob/jcufft/src/main/java/deconvolution/
-        algorithm/RichardsonLucy.java
+            algorithm/RichardsonLucy.java
 
     Args:
-        n_dims: Rank of tensors to be used as inputs (i.e. number of dimensions)
-        pad_mode: Padding mode for optimal FFT performance (defaults to powers of 2 i.e. 'log2' )
-        pad_min: Minimum padding to add to each dimension; should by array or list of numbers equal
-            to extension in each dimension (e.g. for 3D data, [5, 0, 0] would do nothing to x and
-            y padding but would force padding in z-direction to be at least 5)
-        pad_fill: Type of fill to use when padding images; one of ['REFLECT', 'SYMMETRIC', 'CONSTANT'];
-            see https://www.tensorflow.org/api_docs/python/tf/pad for more details
-        input_prep_fn: Data preparation function to inject within computation graph.  Default is PSF 
+        n_dims: Rank of tensors to be used as inputs (i.e. number of dimensions); Note that the order of the dimensions and
+            their interpretation (e.g. x vs y vs z) is up to the user and any convention can be adopted so long as
+            all data and kernel matrices use the same convention
+        pad_mode: Padding mode for optimal FFT performance; One of ['log2', 'none'] (case-insensitive, default 'log2')
+        pad_min: Minimum padding to add to each dimension; Should by array or list of numbers equal
+            to extension in each dimension;  For example, "np.array([0, 0, 5])" would do nothing to x and
+            y padding but would force padding in z-direction to be at least 5 if using the xyz convention
+        pad_fill: Type of fill to use when padding images; One of ['reflect', 'symmetric', 'constant'] 
+            (case-insensitive, default 'reflect'); see https://www.tensorflow.org/api_docs/python/tf/pad for more details
+        start_mode: Initial image mode; One of ['constant', 'input'] (case-insensitive, default 'constant') where:
+            - constant: Use a constant value of .5 as starting image
+            - input: Use image to deconvolve as starting image
+        input_prep_fn: Data preparation function to inject within computation graph; Default is PSF 
             normalization function used to ensure PSF tensor sums to one
         output_prep_fn: Output preparation function to inject within computation graph (e.g.
             Clipping values in deconvolved results); signature is fn(tensor, inputs=None) where
@@ -171,50 +195,54 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         epsilon: Minimum value below which interemdiate results will become 0 to avoid division by 
             small numbers
         device: TensorFlow format device name onto which the majority of the operations should be
-            placed (e.g. '/cpu:0', '/gpu:1'); if providing this, you must also *not* override the
-            default setting of "allow_soft_placement=True" in TF session configs
+            placed (e.g. '/cpu:0', '/gpu:1'); If providing this, you must also *not* override the
+            default setting of "allow_soft_placement=True" in TF session configs 
     """
-    def __init__(self, n_dims, pad_mode=OPM_LOG2, pad_min=None, pad_fill=PADF_REFLECT,
+    def __init__(self, n_dims, pad_mode=DEFAULT_PAD_MODE, pad_min=None, pad_fill=DEFAULT_PAD_FILL, start_mode=DEFAULT_START_MODE,
         input_prep_fn=default_input_prep_fn, output_prep_fn=None, observer_fn=None,
         real_domain_fft=False, epsilon=1e-6, device=None):
         super(RichardsonLucyDeconvolver, self).__init__(
-            n_dims, pad_mode, pad_min, pad_fill, input_prep_fn,
+            n_dims, pad_mode, pad_min, pad_fill, start_mode, input_prep_fn,
             output_prep_fn, real_domain_fft, device
         )
         self.observer_fn = observer_fn
         self.epsilon = epsilon
 
     def run(self, acquisition, niter, session_config=None):
-        input_kwargs = dict(niter=niter, pad_mode=self.pad_mode, pad_min=self.pad_min)
+        input_kwargs = dict(niter=niter, pad_mode=self.pad_mode, pad_min=self.pad_min, start_mode=self.start_mode)
         res = self._run(acquisition, input_kwargs, session_config=session_config)
         return DeconvolutionResult(res['result'], info={k: v for k, v in res.items() if k != 'result'})
 
     def _build_tf_graph(self):
         niter = self._get_niter()
 
-        # Pad mode argument (string like 'log2' or 'none')
-        padmodh = tf.placeholder_with_default(OPM_LOG2, (), name='pad_mode')
-
-        # Minimum padding argument, defaults to zeros
-        padminh = tf.placeholder_with_default(
-            tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
+        # Create argument placeholders with same defaults as those used at graph construction time
+        padmodh = tf.placeholder_with_default(DEFAULT_PAD_MODE, (), name='pad_mode') 
+        padfillh = tf.placeholder_with_default(DEFAULT_PAD_FILL, (), name='pad_fill')
+        smodeh = tf.placeholder_with_default(DEFAULT_START_MODE, (), name='start_mode')
+        padminh = tf.placeholder_with_default(tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
 
         # Data and kernel should have shapes (z, height, width)
         datah = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='data'))
         kernh = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='kernel'))
 
-        # Add assertion operations to validate padding mode and data/kernel dimensions
+        # Add assertion operations to validate padding mode, start mode, and data/kernel dimensions
         flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_NONE)], axis=0)
         assert_pad_mode = tf.assert_greater(
                 tf.reduce_sum(tf.cast(flag_pad_mode, tf.int32)), 0,
                 message='Pad mode not valid', data=[padmodh])
+
+        flag_start_mode = tf.stack([tf.equal(smodeh, SMODE_CONSTANT), tf.equal(smodeh, SMODE_INPUT)], axis=0)
+        assert_start_mode = tf.assert_greater(
+                tf.reduce_sum(tf.cast(flag_start_mode, tf.int32)), 0,
+                message='Start mode not valid', data=[smodeh])
 
         flag_shapes = tf.shape(datah) - tf.shape(kernh)
         assert_shapes = tf.assert_greater_equal(
                 tf.reduce_sum(flag_shapes), 0,
                 message='Data shape must be >= kernel shape', data=[tf.shape(datah), tf.shape(kernh)])
 
-        with tf.control_dependencies([assert_pad_mode, assert_shapes]):
+        with tf.control_dependencies([assert_pad_mode, assert_start_mode, assert_shapes]):
 
             # If configured to do so, expand dimensions of data matrix to power of 2
             # (after adding a minimum padding as well, if given) to avoid use of
@@ -245,7 +273,12 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         # Initialize resulting deconvolved image -- there are several sensible choices for this like the 
         # original image or constant arrays, but some experiments show this to be better, and other 
         # implementations doing the same are "Basic Matlab" and "Scikit-Image" (see class notes for links)
-        decon = tf.identity(.5 * tf.ones_like(datat, dtype=self.dtype), name='deconvolution')
+        decon = tf.cond(
+            tf.equal(smodeh, SMODE_CONSTANT),
+            lambda: tf.identity(.5 * tf.ones_like(datat, dtype=self.dtype), name='deconvolution'),
+            # Multiplication used here to avoid https://github.com/tensorflow/tensorflow/issues/11186
+            lambda: tf.identity(datat * tf.ones_like(datat, dtype=self.dtype), name='deconvolution')
+        )
 
         def cond(i, decon):
             return i <= niter
@@ -282,13 +315,13 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
 
         inputs = {
             'niter': niter, 'data': datah, 'kernel': kernh,
-            'pad_mode': padmodh, 'pad_min': padminh
+            'pad_mode': padmodh, 'pad_min': padminh, 'start_mode': smodeh
         }
         outputs = {
             'result': result,
             'data_shape': tf.shape(datah), 'kern_shape': tf.shape(kernh),
             'pad_shape': pad_shape, 'pad_mode': padmodh,
-            'pad_min': padminh
+            'pad_min': padminh, 'start_mode': smodeh
         }
 
         return inputs, outputs

@@ -1,13 +1,14 @@
 """ TensorFlow utilities related to FFT padding and function selection """
 import tensorflow as tf
 
-OPM_LOG2 = 'log2'
-OPM_NONE = 'none'
+OPM_LOG2 = 'LOG2'
+OPM_NONE = 'NONE'
 OPTIMAL_PAD_MODES = [OPM_NONE, OPM_LOG2]
 
 PADF_REFLECT = 'REFLECT'
 PADF_SYMMETRIC = 'SYMMETRIC'
 PADF_ZERO = 'CONSTANT'
+PAD_FILL_MODES = [PADF_REFLECT, PADF_SYMMETRIC, PADF_ZERO]
 
 
 def get_fft_tf_fns(n_dims, real_domain_only=True):
