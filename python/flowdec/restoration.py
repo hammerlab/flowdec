@@ -63,7 +63,7 @@ class Deconvolver(metaclass=abc.ABCMeta):
         if not hasattr(self, 'graph'):
             raise ValueError('Must initialize deconvolver before running (via `.initialize` function)')
 
-        if self.device is not None and not session_config.allow_soft_placement:
+        if self.device is not None and session_config and not session_config.allow_soft_placement:
             raise AssertionError(
                 'When explicitly setting a device, you must also set '
                 '"allow_soft_placement" to true in TF session configuration'

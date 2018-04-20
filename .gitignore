@@ -6,6 +6,7 @@ __pycache__/
 target/
 .vscode
 *.code-workspace
+.DS_Store
 
 # C extensions
 *.so
