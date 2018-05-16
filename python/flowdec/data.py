@@ -32,6 +32,9 @@ class Acquisition(object):
     def shape(self):
         return self.transform(lambda d: d.shape)
 
+    def dtype(self):
+        return self.transform(lambda d: d.dtype)
+
     def stats(self):
         from scipy.stats import describe
         return self.transform(lambda v: describe(v.ravel()))
