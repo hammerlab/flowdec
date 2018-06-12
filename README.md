@@ -153,6 +153,15 @@ docker exec -it flowdec /bin/bash # Connect
 
 The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
 
+## Validation
+
+By in large, the purpose of this project is to attain near equivalence with a subset of the functionality provided by both [DeconvolutionLab2](http://bigwww.epfl.ch/deconvolution/deconvolutionlab2/) and [PSFGenerator](http://bigwww.epfl.ch/algorithms/psfgenerator/) via much faster implementations.
+
+To validate this much has been accomplished, there are two notebooks in the [python/validation](python/validation) folder demonstrating the following:
+
+- [Deconvolution Validation](python/validation/deconvolution/validation.ipynb) - This notebook aggregates results from Flowdec and DeconvolutionLab2 applied to several reference datasets and verifies that deconvolved volumes are very nearly identical
+- [PSF Generation Validation](python/validation/psfgeneration/validation.ipynb) - This notebook aggregates results from Flowdec and PSFGenerator used to generate PSFs from a variety of different configurations and evaluates their similarity (which is also very high)
+
 ## Acknowledgements
 
 Thanks to Kyle Douglass for explaining some of the finer aspects of this Python [Gibson-Lanni PSF generator](http://kmdouglass.github.io/posts/implementing-a-fast-gibson-lanni-psf-solver-in-python.html), Jizhou Li for helping to better understand that diffraction model, Hadrien Mary for giving great context on the state of open-source deconvolution libraries, and Brian Northan for lending great advice/context on library performance, blind deconvolution and how point spread functions work in general.
