@@ -88,7 +88,7 @@ GL_PSF_ARGS = [
     ['tg',          None, "Coverslip thickness, experimental (microns) (defaults to tg0 if not given)", "Microscope Parameters"],
     ['res_lateral', 0.1,  "Lateral pizel size / resolution (microns)", "Microscope Parameters"],
     ['res_axial',   0.25, "Axial pizel size / resolution (microns)", "Microscope Parameters"],
-    ['pz',          2,    "Particle distance from coverslip (microns)", "Microscope Parameters"],
+    ['pz',          0,    "Particle distance from coverslip (microns)", "Microscope Parameters"],
     ['num_basis',   100,  "Number of rescaled Bessels that approximate the phase function", "Precision Parameters"],
     ['num_samples', 1000, "Number of pupil samples along radial direction", "Precision Parameters"],
     ['oversampling',2,    "Defines the upsampling ratio on the image space grid for computations",
