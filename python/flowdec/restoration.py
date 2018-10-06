@@ -3,8 +3,8 @@ import abc
 import tensorflow as tf
 from flowdec import fft_utils_tf
 from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, OPTIMAL_PAD_MODES, PADF_REFLECT, PAD_FILL_MODES
-from flowdec.fft_utils_tf import optimize_dims,  ifftshift, fftshift
-from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_print, tf_observer
+from flowdec.fft_utils_tf import optimize_dims, ifftshift
+from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_observer
 
 SMODE_CONSTANT = 'CONSTANT'
 SMODE_INPUT = 'INPUT'
@@ -178,12 +178,12 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         pad_min: Minimum padding to add to each dimension; Should by array or list of numbers equal
             to extension in each dimension;  For example, "np.array([0, 0, 5])" would do nothing to x and
             y padding but would force padding in z-direction to be at least 5 if using the xyz convention
-        pad_fill: Type of fill to use when padding images; One of ['reflect', 'symmetric', 'constant'] 
+        pad_fill: Type of fill to use when padding images; One of ['reflect', 'symmetric', 'constant']
             (case-insensitive, default 'reflect'); see https://www.tensorflow.org/api_docs/python/tf/pad for more details
         start_mode: Initial image mode; One of ['constant', 'input'] (case-insensitive, default 'constant') where:
             - constant: Use a constant value of .5 as starting image
             - input: Use image to deconvolve as starting image
-        input_prep_fn: Data preparation function to inject within computation graph; Default is PSF 
+        input_prep_fn: Data preparation function to inject within computation graph; Default is PSF
             normalization function used to ensure PSF tensor sums to one
         output_prep_fn: Output preparation function to inject within computation graph (e.g.
             Clipping values in deconvolved results); signature is fn(tensor, inputs=None) where
@@ -192,11 +192,11 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         observer_fn: Function to inject into tensorflow graph causing passage of current image estimation
             and iteration number (useful for setting number of iterations)
         real_domain_fft: Flag indicating whether or not to use the real or complex TF FFT functions
-        epsilon: Minimum value below which interemdiate results will become 0 to avoid division by 
+        epsilon: Minimum value below which interemdiate results will become 0 to avoid division by
             small numbers
         device: TensorFlow format device name onto which the majority of the operations should be
             placed (e.g. '/cpu:0', '/gpu:1'); If providing this, you must also *not* override the
-            default setting of "allow_soft_placement=True" in TF session configs 
+            default setting of "allow_soft_placement=True" in TF session configs
     """
     def __init__(self, n_dims, pad_mode=DEFAULT_PAD_MODE, pad_min=None, pad_fill=DEFAULT_PAD_FILL, start_mode=DEFAULT_START_MODE,
         input_prep_fn=default_input_prep_fn, output_prep_fn=None, observer_fn=None,
@@ -217,7 +217,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         niter = self._get_niter()
 
         # Create argument placeholders with same defaults as those used at graph construction time
-        padmodh = tf.placeholder_with_default(DEFAULT_PAD_MODE, (), name='pad_mode') 
+        padmodh = tf.placeholder_with_default(DEFAULT_PAD_MODE, (), name='pad_mode')
         padfillh = tf.placeholder_with_default(DEFAULT_PAD_FILL, (), name='pad_fill')
         smodeh = tf.placeholder_with_default(DEFAULT_START_MODE, (), name='start_mode')
         padminh = tf.placeholder_with_default(tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
@@ -262,7 +262,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         # Infer available TF FFT functions based on predefined number of data dimensions
         fft_fwd, fft_rev = fft_utils_tf.get_fft_tf_fns(self.n_dims, real_domain_only=self.real_domain_fft)
 
-        # Determine intermediate kernel representation necessary based on domain specified to 
+        # Determine intermediate kernel representation necessary based on domain specified to
         # carry out computations
         kern_fft = fft_fwd(kernt)
         if self.real_domain_fft:
@@ -270,8 +270,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         else:
             kern_fft_conj = tf.conj(kern_fft)
 
-        # Initialize resulting deconvolved image -- there are several sensible choices for this like the 
-        # original image or constant arrays, but some experiments show this to be better, and other 
+        # Initialize resulting deconvolved image -- there are several sensible choices for this like the
+        # original image or constant arrays, but some experiments show this to be better, and other
         # implementations doing the same are "Basic Matlab" and "Scikit-Image" (see class notes for links)
         decon = tf.cond(
             tf.equal(smodeh, SMODE_CONSTANT),
