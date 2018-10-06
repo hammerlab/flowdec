@@ -153,6 +153,25 @@ docker exec -it flowdec /bin/bash # Connect
 
 The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
 
+The previous two images are built from the current master branch
+of github.com/hammerlab/flowdec.git.  To build an image using
+your local copy of the source, you can use this command:
+
+```bash
+docker build --no-cache -t flowdec -f docker/Dockerfile.devel .
+```
+
+You may want to combine this with a bind mount of your local source tree into
+the running container.  This setup will let you make edits to the source and
+have them immediately take effect in the running container.
+
+```bash
+LOCAL_SRC=$(pwd)
+DEST_SRC=/repos/flowdec
+
+docker run -ti -p 8888:8888 -v ${LOCAL_SRC}:${DEST_SRC} flowdec
+```
+
 ## Validation
 
 By in large, the purpose of this project is to attain near equivalence with a subset of the functionality provided by both [DeconvolutionLab2](http://bigwww.epfl.ch/deconvolution/deconvolutionlab2/) and [PSFGenerator](http://bigwww.epfl.ch/algorithms/psfgenerator/) via much faster implementations.
