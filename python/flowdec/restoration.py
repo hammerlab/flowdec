@@ -3,8 +3,8 @@ import abc
 import tensorflow as tf
 from flowdec import fft_utils_tf
 from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, OPTIMAL_PAD_MODES, PADF_REFLECT, PAD_FILL_MODES
-from flowdec.fft_utils_tf import optimize_dims,  ifftshift, fftshift
-from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_print, tf_observer
+from flowdec.fft_utils_tf import optimize_dims, ifftshift
+from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_observer
 
 SMODE_CONSTANT = 'CONSTANT'
 SMODE_INPUT = 'INPUT'

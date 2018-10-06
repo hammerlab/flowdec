@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 from flowdec import tf_ops, test_utils
-from numpy.testing import assert_array_equal, assert_almost_equal
+from numpy.testing import assert_array_equal
 
 
 class TestTFOps(unittest.TestCase):
