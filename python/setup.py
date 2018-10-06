@@ -16,7 +16,7 @@ if __name__ == '__main__':
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
         author="Eric Czech",
         author_email="eric@hammerlab.org",
-        url="",
+        url="https://github.com/hammerlab/flowdec",
         license="http://www.apache.org/licenses/LICENSE-2.0.html",
         classifiers=[
             'Environment :: Console',
