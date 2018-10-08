@@ -6,8 +6,12 @@ if os.getenv('TF_GPU', 'false') == 'true':
 else:
     requires = ['tensorflow>=1.6.0']
 
-with open('requirements.txt', 'r') as fd:
-    requires += [l.strip() for l in fd.readlines()]
+try:
+    with open('requirements.txt', 'r') as fd:
+        requires += [l.strip() for l in fd.readlines()]
+except FileNotFoundError:
+    # for when running in a tox virtualenv
+    requires += ['scikit-image', 'matplotlib', 'requests']
 
 if __name__ == '__main__':
     setup(
