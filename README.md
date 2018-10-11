@@ -39,7 +39,6 @@ import matplotlib.pyplot as plt
 from skimage import exposure
 from scipy import ndimage, signal
 from flowdec import data as fd_data
-from flowdec import psf as fd_psf
 from flowdec import restoration as fd_restoration
 
 # Load "Purkinje Neuron" dataset downsampled from 200x1024x1024 to 50x256x256
