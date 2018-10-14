@@ -32,10 +32,8 @@ optional arguments:
 
 Examples:
 
-cd $REPOS/flowdec/python
-
 # Invocation with pre-defined PSF
-python examples/scripts/deconvolution.py \
+deconvolution \
 --data-path=flowdec/datasets/bars-25pct/data.tif \
 --psf-path=flowdec/datasets/bars-25pct/kernel.tif \
 --output-path=/tmp/result.tif \
@@ -44,16 +42,16 @@ python examples/scripts/deconvolution.py \
 
 # Invocation with dynamic PSF
 echo '{"na": 0.75, "wavelength": 0.425, "size_z": 32, "size_x": 64, "size_y": 64}' > /tmp/psf.json
-python examples/scripts/deconvolution.py \
+deconvolution \
 --data-path=flowdec/datasets/bars-25pct/data.tif \
 --psf-config-path=/tmp/psf.json \
 --output-path=/tmp/result.tif \
 --n-iter=25 \
 --log-level=DEBUG
-
 """
+
 from timeit import default_timer as timer
-from argparse import ArgumentParser
+import argparse
 from skimage import io
 from flowdec import restoration as fd_restoration
 from flowdec import data as fd_data
@@ -62,7 +60,28 @@ import logging
 
 
 def get_arg_parser():
-    parser = ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Deconvolution CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+
+# Invocation with pre-defined PSF
+deconvolution \\
+--data-path=flowdec/datasets/bars-25pct/data.tif \\
+--psf-path=flowdec/datasets/bars-25pct/kernel.tif \\
+--output-path=/tmp/result.tif \\
+--n-iter=25 \\
+--log-level=DEBUG
+
+# Invocation with dynamic PSF
+echo '{"na": 0.75, "wavelength": 0.425, "size_z": 32, "size_x": 64, "size_y": 64}' > /tmp/psf.json
+deconvolution \\
+--data-path=flowdec/datasets/bars-25pct/data.tif \\
+--psf-config-path=/tmp/psf.json \\
+--output-path=/tmp/result.tif \\
+--n-iter=25 \\
+--log-level=DEBUG""")
     parser.add_argument(
         "--data-path",
         required=True,
