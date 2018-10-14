@@ -128,7 +128,7 @@ deconvolution \\
     return parser
 
 
-def resolve_psf(args):
+def resolve_psf(args, logger):
     if args.psf_path and args.psf_config_path:
         raise ValueError('Must supply PSF file path or PSF config path but not both')
     if not args.psf_path and not args.psf_config_path:
@@ -155,7 +155,7 @@ def main():
 
     acq = fd_data.Acquisition(
         data=io.imread(args.data_path),
-        kernel=resolve_psf(args)
+        kernel=resolve_psf(args, logger)
     )
     logger.debug('Loaded data with shape {} and psf with shape {}'.format(acq.data.shape, acq.kernel.shape))
 
