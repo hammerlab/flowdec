@@ -30,6 +30,11 @@ if __name__ == '__main__':
             'Topic :: Scientific/Engineering :: Bio-Informatics',
         ],
         install_requires=requires,
-        packages=['flowdec', 'flowdec.nb'],
-        package_data={'flowdec': ['datasets/*/*.tif']}
+        packages=['flowdec', 'flowdec.cmd', 'flowdec.nb'],
+        package_data={'flowdec': ['datasets/*/*.tif']},
+        entry_points={
+            'console_scripts': [
+                'deconvolution = flowdec.cmd.deconvolution:main'
+            ]
+        }
     )

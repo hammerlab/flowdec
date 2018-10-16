@@ -39,7 +39,6 @@ import matplotlib.pyplot as plt
 from skimage import exposure
 from scipy import ndimage, signal
 from flowdec import data as fd_data
-from flowdec import psf as fd_psf
 from flowdec import restoration as fd_restoration
 
 # Load "Purkinje Neuron" dataset downsampled from 200x1024x1024 to 50x256x256
@@ -81,13 +80,14 @@ for i, d in enumerate([actual, data, res]):
 
 As a more realistic use case, here is an example showing how a point spread function configuration can be used in a headless deconvolution:
 
-*See full deconvolution script [here](python/examples/scripts/deconvolution.py)*
+*See full deconvolution script [here](python/flowdec/cmd/deconvolution.py)*
 
 ```bash
 # Generate a configuration file containing PSF parameters (see flowdec.psf module for more details)
 echo '{"na": 0.75, "wavelength": 0.425, "size_z": 32, "size_x": 64, "size_y": 64}' > /tmp/psf.json
 
-# Invoke deconvolution script with the above PSF configuration and an input dataset to deconvolve
+# Invoke deconvolution script with the above PSF configuration and an input dataset to deconvolve.
+# If flowdec has been installed, you may run the “deconvolution” command.
 python examples/scripts/deconvolution.py \
 --data-path=flowdec/datasets/bars-25pct/data.tif \
 --psf-config-path=/tmp/psf.json \
@@ -110,7 +110,7 @@ python examples/scripts/deconvolution.py \
 - [Hollow Bars GPU Benchmarking](python/examples/notebooks/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full 256x256x128 volume with GPU-enabled system
 - [DeconvolutionLab2 Comparison](python/examples/notebooks/DeconvolutionLab2%20-%20Benchmarking.ipynb) - Comparing execution times between [DeconvolutionLab2](http://bigwww.epfl.ch/deconvolution/deconvolutionlab2/) and Flowdec
 - [Graph Export](python/examples/notebooks/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
-- [Command Line Interface](python/examples/scripts/deconvolution.py) - CLI for executing single deconvolutions with either a pre-defined or dynamically generated point spread function
+- [Command Line Interface](python/flowdec/cmd/deconvolution.py) - CLI for executing single deconvolutions with either a pre-defined or dynamically generated point spread function
 
 ### Java
 
