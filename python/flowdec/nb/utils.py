@@ -77,12 +77,12 @@ def plot_img_preview(img, zstart=None, zstop=None, cmap='viridis', proj_figsize=
                            cmap=cmap, **kwargs)
 
 
-rotate_xy = partial(rotate, axes=(1,2))
-rotate_yz = partial(rotate, axes=(0,1))
-rotate_xz = partial(rotate, axes=(0,2))
+rotate_xy = partial(rotate, axes=(1, 2))
+rotate_yz = partial(rotate, axes=(0, 1))
+rotate_xz = partial(rotate, axes=(0, 2))
 
 
-def plot_rotations(img, projection=lambda img: img.max(axis=0), cmap='viridis', figsize=(12,12)):
+def plot_rotations(img, projection=lambda img: img.max(axis=0), cmap='viridis', figsize=(12, 12)):
     """Plot the same volume in a 3x3 grid with 0, 45, and 90 degree rotations around each axis"""
     fig, axs = plt.subplots(3, 3)
     fig.set_size_inches(figsize)
