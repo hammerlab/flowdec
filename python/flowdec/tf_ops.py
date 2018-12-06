@@ -27,7 +27,7 @@ def tf_observer(tensors, observer_fn):
     """
     def _observe(*args):
         observer_fn(*args)
-        return np.array([0])
+        return np.array([0], dtype=np.int32)
     observe_op = tf.py_func(_observe, tensors, tf.int32, stateful=True, name='observer')[0]
     with tf.control_dependencies([observe_op]):
         ts = [tf.identity(t) for t in tensors]

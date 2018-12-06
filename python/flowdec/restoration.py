@@ -217,8 +217,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         niter = self._get_niter()
 
         # Create argument placeholders with same defaults as those used at graph construction time
-        padmodh = tf.placeholder_with_default(DEFAULT_PAD_MODE, (), name='pad_mode') 
-        padfillh = tf.placeholder_with_default(DEFAULT_PAD_FILL, (), name='pad_fill')
+        padmodh = tf.placeholder_with_default(DEFAULT_PAD_MODE, (), name='pad_mode')
         smodeh = tf.placeholder_with_default(DEFAULT_START_MODE, (), name='start_mode')
         padminh = tf.placeholder_with_default(tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
 
@@ -301,7 +300,9 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
 
             # If given an "observer", pass the current image restoration and iteration counter to it
             if self.observer_fn is not None:
-                decon, i = tf_observer([decon, i], self.observer_fn)
+                # Remove any cropping that may have been added as this is usually not desirable in observers
+                decon_crop = unpad_around_center(decon, tf.shape(datah))
+                _, i, decon = tf_observer([decon_crop, i, decon], self.observer_fn)
 
             return i + 1, decon
 
