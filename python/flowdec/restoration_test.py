@@ -2,6 +2,7 @@ import unittest
 
 import os
 from flowdec import data as fd_data
+from flowdec import restoration as fd_restoration
 from flowdec import validation as tfv
 from numpy.testing import assert_array_equal
 import numpy as np
@@ -158,6 +159,17 @@ class TestRestoration(unittest.TestCase):
             assert_array_equal(
                     bin_tru, bin_res, '3D restoration not equal to original\nOriginal: {}\nResult: {}'
                         .format(bin_tru, bin_res))
+
+    def test_observer(self):
+        acq = fd_data.bars_25pct()
+        imgs = []
+
+        def observer(img, *_):
+            imgs.append(img)
+            self.assertEqual(acq.data.shape, img.shape, msg='Observer image and original shapes not equal')
+        algo = fd_restoration.RichardsonLucyDeconvolver(n_dims=3, observer_fn=observer).initialize()
+        algo.run(acq, niter=5)
+        self.assertEqual(len(imgs), 5)
 
     def _decon_shape(self, data, kernel):
         # Apply blur to original shape and run restoration on blurred image
