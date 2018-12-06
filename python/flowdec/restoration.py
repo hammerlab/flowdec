@@ -193,7 +193,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             and iteration number (useful for setting number of iterations); signature should be:
             `fn(img, i, *args)` where img is the current state of the deconvolution result and i is the
             current 1-based iteration number (*args contains debugging data like the padded, reflected
-            version of the image)
+            version of the image) -- this function should return nothing but if it does, results are ignored
         real_domain_fft: Flag indicating whether or not to use the real or complex TF FFT functions
         epsilon: Minimum value below which interemdiate results will become 0 to avoid division by
             small numbers
