@@ -6,8 +6,12 @@ if os.getenv('TF_GPU', 'false') == 'true':
 else:
     requires = ['tensorflow>=1.6.0']
 
-with open('requirements.txt', 'r') as fd:
-    requires += [l.strip() for l in fd.readlines()]
+try:
+    with open('requirements.txt', 'r') as fd:
+        requires += [l.strip() for l in fd.readlines()]
+except FileNotFoundError:
+    # for when running in a tox virtualenv
+    requires += ['scikit-image', 'matplotlib', 'requests']
 
 if __name__ == '__main__':
     setup(
@@ -16,7 +20,7 @@ if __name__ == '__main__':
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
         author="Eric Czech",
         author_email="eric@hammerlab.org",
-        url="",
+        url="https://github.com/hammerlab/flowdec",
         license="http://www.apache.org/licenses/LICENSE-2.0.html",
         classifiers=[
             'Environment :: Console',
@@ -26,6 +30,11 @@ if __name__ == '__main__':
             'Topic :: Scientific/Engineering :: Bio-Informatics',
         ],
         install_requires=requires,
-        packages=['flowdec', 'flowdec.nb'],
-        package_data={'flowdec': ['datasets/*/*.tif']}
+        packages=['flowdec', 'flowdec.cmd', 'flowdec.nb'],
+        package_data={'flowdec': ['datasets/*/*.tif']},
+        entry_points={
+            'console_scripts': [
+                'deconvolution = flowdec.cmd.deconvolution:main'
+            ]
+        }
     )

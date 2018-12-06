@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/hammerlab/flowdec.svg?branch=master)](https://travis-ci.org/hammerlab/flowdec)
+
 # Flowdec
 
 **Flowdec** is a library containing [TensorFlow](https://github.com/tensorflow/tensorflow) (TF) implementations of image and signal deconvolution algorithms.  Currently, only [Richardson-Lucy Deconvolution](https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution) has been implemented but others may come in the future.
@@ -39,7 +41,6 @@ import matplotlib.pyplot as plt
 from skimage import exposure
 from scipy import ndimage, signal
 from flowdec import data as fd_data
-from flowdec import psf as fd_psf
 from flowdec import restoration as fd_restoration
 
 # Load "Purkinje Neuron" dataset downsampled from 200x1024x1024 to 50x256x256
@@ -81,13 +82,14 @@ for i, d in enumerate([actual, data, res]):
 
 As a more realistic use case, here is an example showing how a point spread function configuration can be used in a headless deconvolution:
 
-*See full deconvolution script [here](python/examples/scripts/deconvolution.py)*
+*See full deconvolution script [here](python/flowdec/cmd/deconvolution.py)*
 
 ```bash
 # Generate a configuration file containing PSF parameters (see flowdec.psf module for more details)
 echo '{"na": 0.75, "wavelength": 0.425, "size_z": 32, "size_x": 64, "size_y": 64}' > /tmp/psf.json
 
-# Invoke deconvolution script with the above PSF configuration and an input dataset to deconvolve
+# Invoke deconvolution script with the above PSF configuration and an input dataset to deconvolve.
+# If flowdec has been installed, you may run the “deconvolution” command.
 python examples/scripts/deconvolution.py \
 --data-path=flowdec/datasets/bars-25pct/data.tif \
 --psf-config-path=/tmp/psf.json \
@@ -110,7 +112,7 @@ python examples/scripts/deconvolution.py \
 - [Hollow Bars GPU Benchmarking](python/examples/notebooks/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full 256x256x128 volume with GPU-enabled system
 - [DeconvolutionLab2 Comparison](python/examples/notebooks/DeconvolutionLab2%20-%20Benchmarking.ipynb) - Comparing execution times between [DeconvolutionLab2](http://bigwww.epfl.ch/deconvolution/deconvolutionlab2/) and Flowdec
 - [Graph Export](python/examples/notebooks/Algorithm%20Graph%20Export.ipynb) - Defining and exporting TensorFlow graphs
-- [Command Line Interface](python/examples/scripts/deconvolution.py) - CLI for executing single deconvolutions with either a pre-defined or dynamically generated point spread function
+- [Command Line Interface](python/flowdec/cmd/deconvolution.py) - CLI for executing single deconvolutions with either a pre-defined or dynamically generated point spread function
 
 ### Java
 
@@ -152,6 +154,25 @@ docker exec -it flowdec /bin/bash # Connect
 ```
 
 The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
+
+The previous two images are built from the current master branch
+of github.com/hammerlab/flowdec.git.  To build an image using
+your local copy of the source, you can use this command:
+
+```bash
+docker build --no-cache -t flowdec -f docker/Dockerfile.devel .
+```
+
+You may want to combine this with a bind mount of your local source tree into
+the running container.  This setup will let you make edits to the source and
+have them immediately take effect in the running container.
+
+```bash
+LOCAL_SRC=$(pwd)
+DEST_SRC=/repos/flowdec
+
+docker run -ti -p 8888:8888 -v ${LOCAL_SRC}:${DEST_SRC} flowdec
+```
 
 ## Validation
 

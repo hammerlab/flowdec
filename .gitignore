@@ -69,6 +69,7 @@ target/
 .venv
 venv/
 ENV/
+.tox
 
 # Java
 .metadata
