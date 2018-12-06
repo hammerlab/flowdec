@@ -200,10 +200,3 @@ Thanks to Kyle Douglass for explaining some of the finer aspects of this Python 
     The Cell Image Library, CIL: 10106, 10107, and 10108.<br>
     Available at http://www.cellimagelibrary.org. Accessed December 08, 2010.<br>
 
-## TODO
-
-- Figure out how to specify orientation of z-stacks for PSF generator (and which direction test datasets have)
-    - Research coverslip thickness and working distance inputs
-- Add and test java within docker image: ```apt-get install -y default-jdk maven```
-- Test multi-gpu on some linux machine via java
-- Tensorboard monitoring during iterations instead of python function injection
