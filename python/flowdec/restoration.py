@@ -190,7 +190,10 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             input placeholders may be provided as a way to make transformations of results dependent on
             input data (inputs is a dictionary keyed by tensor input name)
         observer_fn: Function to inject into tensorflow graph causing passage of current image estimation
-            and iteration number (useful for setting number of iterations)
+            and iteration number (useful for setting number of iterations); signature should be:
+            `fn(img, i, *args)` where img is the current state of the deconvolution result and i is the
+            current 1-based iteration number (*args contains debugging data like the padded, reflected
+            version of the image)
         real_domain_fft: Flag indicating whether or not to use the real or complex TF FFT functions
         epsilon: Minimum value below which interemdiate results will become 0 to avoid division by
             small numbers
