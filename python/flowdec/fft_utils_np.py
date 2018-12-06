@@ -1,15 +1,16 @@
 """ Numpy implementations of various FFT utilities used for testing and validation """
 import numpy as np
 
-OPM_FFTP = 'fftpack'
-OPM_LOG2 = 'log2'
-OPM_NONE = 'none'
+OPM_FFTP = 'FFTPACK'
+OPM_LOG2 = 'LOG2'
+OPM_NONE = 'NONE'
 OPTIMAL_PAD_MODES = [OPM_NONE, OPM_LOG2, OPM_FFTP]
 
 
 def optimize_dims(dims, mode):
     """Computes FFT Length for data padded out to optimize FFT implementations"""
     from scipy.signal.signaltools import fftpack
+    mode = mode.upper()
 
     # Round FFT Length up to next nearest optimal value based on mode given
     if mode == OPM_LOG2:

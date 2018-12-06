@@ -59,6 +59,7 @@ def optimize_dims(dims, mode):
     Returns:
 
     """
+    mode = mode.upper()
 
     # Round FFT Length up to next nearest optimal value based on mode given
     if mode == OPM_LOG2:
