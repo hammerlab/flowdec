@@ -108,6 +108,7 @@ python examples/scripts/deconvolution.py \
 - [Neuron](python/examples/notebooks/Neuron%20-%203D%20Deconvolution.ipynb) - Deconvolution of a natural 3D image with synthetic point spread function
 - [C. Elegans](python/examples/notebooks/CElegans%20-%20Multiple%20Channel%20Example.ipynb) - Deconvolution of 712x672x104 acquisition for 3 separate channels
 - [Astronaut](python/examples/notebooks/Astronaut%20-%20Ringing%20Artifacts.ipynb) - Dealing with artifacts in deconvolved images
+- [Monitoring Iterations](python/examples/notebooks/Monitoring%20Iterations.ipynb) - Tracking deconvolution progress by visualizing results at each iteration
 - [Hollow Bars](python/examples/notebooks/Hollow%20Bars%20-%20Synthetic%20Deconvolution.ipynb) - Deconvolution of downsampled 64x64x32 synthetic volume (as a CPU-friendly example)
 - [Hollow Bars GPU Benchmarking](python/examples/notebooks/Hollow%20Bars%20-%20Benchmarking.ipynb) - Testing running times on full 256x256x128 volume with GPU-enabled system
 - [DeconvolutionLab2 Comparison](python/examples/notebooks/DeconvolutionLab2%20-%20Benchmarking.ipynb) - Comparing execution times between [DeconvolutionLab2](http://bigwww.epfl.ch/deconvolution/deconvolutionlab2/) and Flowdec
@@ -199,10 +200,3 @@ Thanks to Kyle Douglass for explaining some of the finer aspects of this Python 
     The Cell Image Library, CIL: 10106, 10107, and 10108.<br>
     Available at http://www.cellimagelibrary.org. Accessed December 08, 2010.<br>
 
-## TODO
-
-- Figure out how to specify orientation of z-stacks for PSF generator (and which direction test datasets have)
-    - Research coverslip thickness and working distance inputs
-- Add and test java within docker image: ```apt-get install -y default-jdk maven```
-- Test multi-gpu on some linux machine via java
-- Tensorboard monitoring during iterations instead of python function injection
