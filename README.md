@@ -124,10 +124,22 @@ python examples/scripts/deconvolution.py \
 The project can be installed, ideally in a python 3.6 environment (though it should work in 3.5 too), by running:
 
 ```bash
+export TF_GPU=true # Set to false for cpu-only environments
+pip install flowdec
+```
+
+Alternatively, the project could be installed from source by doing the following:
+
+```bash
 git clone https://github.com/hammerlab/flowdec.git
 cd flowdec
-pip install .
+pip install -e .
 ```
+
+Note that this project requires either the ```tensorflow``` or ```tensorflow-gpu``` package and that the 
+```TF_GPU``` environment variable is used in the installation script to determine which dependency is required.
+  If you do have a GPU and don't set TF_GPU to ```true```, then the ```tensorflow``` cpu-only dependency is
+  assumed and deconvolution will not use GPU acceleration (so make sure to set this variable). 
 
 
 ### Docker Instructions

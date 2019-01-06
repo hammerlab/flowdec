@@ -28,7 +28,7 @@ if __name__ == '__main__':
             'Intended Audience :: Science/Research',
             'Topic :: Scientific/Engineering :: Bio-Informatics',
             'License :: OSI Approved :: Apache Software License',
-            'Programming Language:: Python:: 3.6'
+            'Programming Language :: Python :: 3.6'
         ],
         install_requires=requires,
         packages=['flowdec', 'flowdec.cmd', 'flowdec.nb'],
