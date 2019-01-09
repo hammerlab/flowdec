@@ -142,14 +142,9 @@ Alternatively, the project could be installed from source by doing the following
 
 ```bash
 git clone https://github.com/hammerlab/flowdec.git
-cd flowdec
+cd flowdec/python
 pip install -e .
-```
-
-Note that this project requires either the ```tensorflow``` or ```tensorflow-gpu``` package and that the 
-```TF_GPU``` environment variable is used in the installation script to determine which dependency is required.
-  If you do have a GPU and don't set TF_GPU to ```true```, then the ```tensorflow``` cpu-only dependency is
-  assumed and deconvolution will not use GPU acceleration (so make sure to set this variable). 
+``` 
 
 ### Docker Instructions
 
@@ -177,9 +172,9 @@ docker exec -it flowdec /bin/bash # Connect
 
 The Flowdec dockerfile extends the [TensorFlow DockerHub Images](https://hub.docker.com/r/tensorflow/tensorflow/) so its usage is similar where running it in the foreground automatically starts jupyter notebook and prints a link to connect to it via a browser on the host system.
 
-The previous two images are built from the current master branch
+The previous image is built from the current master branch
 of github.com/hammerlab/flowdec.git.  To build an image using
-your local copy of the source, you can use this command:
+your local copy of the source instead, you can use this command:
 
 ```bash
 docker build --no-cache -t flowdec -f docker/Dockerfile.devel .
