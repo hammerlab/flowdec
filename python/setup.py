@@ -1,17 +1,12 @@
 from setuptools import setup
 import os
 
-if os.getenv('TF_GPU', 'false') == 'true':
-    requires = ['tensorflow-gpu>=1.6.0']
-else:
-    requires = ['tensorflow>=1.6.0']
-
 try:
     with open('requirements.txt', 'r') as fd:
-        requires += [l.strip() for l in fd.readlines()]
+        requires = [l.strip() for l in fd.readlines()]
 except FileNotFoundError:
     # for when running in a tox virtualenv
-    requires += ['scikit-image', 'matplotlib', 'requests']
+    requires = ['scikit-image', 'matplotlib', 'requests']
 
 if __name__ == '__main__':
     setup(
@@ -31,6 +26,10 @@ if __name__ == '__main__':
             'Programming Language :: Python :: 3.6'
         ],
         install_requires=requires,
+        extras_require={
+            "tf": ["tensorflow>=1.6.0"],
+            "tf_gpu": ["tensorflow-gpu>=1.6.0"],
+        },
         packages=['flowdec', 'flowdec.cmd', 'flowdec.nb'],
         package_data={'flowdec': ['datasets/*/*.tif']},
         entry_points={

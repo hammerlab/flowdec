@@ -1,4 +1,4 @@
 scikit-image
 matplotlib
 requests
-# TensorFlow CPUvsGPU dependency to be determined at runtime
+# `tensorflow` or `tensorflow-gpu` must be installed, as well.
