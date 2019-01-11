@@ -1,6 +1,14 @@
 sudo: false
 language: python
 python:
-      - "3.6"
+- '3.6'
 install: pip install tox
 script: cd python && tox
+deploy:
+  provider: pypi
+  distributions: sdist
+  user: hammerlab-chs
+  password:
+    secure: dYclcu443KkDCKBwAkaqUzMEF37YiKvJD7fCqjM6mRBD7GVvDWmDH7bicD3DEkoSw8SfBxeyPaTNNk4PETiHxtnhWCd5tFEti2FJeEuSkTituo1GrG2tcQCCJRqu0whUlmgjklpEoeSNUxOPg+YBzYciEsaSifG4j23Fv2WsSdOXDwEe3a5l5YvuBhX2j32nf3UeB+8aHuXZr1qPlZX80iWh5m7MBIYa8vEDf5OdA3gBTQOQvSklAMXXtGfJIGcQejWt16J94bKPhV+SxzvmHk7LCesB91dxLrum3VJafm1XvTYoEiUvGS7/NBsp2Y2tNihixF2CqUQNWuyrCNaQf9XrX8mrjyXgfCer+I6EoNcU45HoRclgAqXtvUbvUXjlE9IX+wM3Q/camCAtjNuzNabbHm95c5P+YLN6ZNbRul9Q2FYuiRDUHP+PbguUicQ5KdR5Jg5qMKSYSfnErframw3eLf22Zv7jsA95jMMLIPswdi/5pufViwRe19eLb7uIYYwsN7hm0O0kDfc5y8tqYRdv44W0eXA+nxO2pvCe7GmsT1k0mLEWCXz5e+x9UtLwxJ6CtfAOGSTK2+Ul4eQeCdWbSQNZM0xRO39qcJywBocgNHHzojReCKzHtqOj3m6s+gfCPhcTn9H/RJaCFW5ohyVIp9M9SUHfnm3BwJxkXrw=
+  on:
+    tags: true
