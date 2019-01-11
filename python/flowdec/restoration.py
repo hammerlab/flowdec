@@ -184,9 +184,9 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             - constant: Use a constant value of .5 as starting image
             - input: Use image to deconvolve as starting image
         input_prep_fn: Data preparation function to inject within computation graph; Default is PSF
-            normalization function used to ensure PSF tensor sums to one
+            normalization function used to ensure PSF tensor sums to one; Signature is fn(tensor_name, tensor)
         output_prep_fn: Output preparation function to inject within computation graph (e.g.
-            Clipping values in deconvolved results); signature is fn(tensor, inputs=None) where
+            Clipping values in deconvolved results); Signature is fn(tensor_name, tensor, inputs=None) where
             input placeholders may be provided as a way to make transformations of results dependent on
             input data (inputs is a dictionary keyed by tensor input name)
         observer_fn: Function to inject into tensorflow graph causing passage of current image estimation
