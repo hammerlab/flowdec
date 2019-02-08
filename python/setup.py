@@ -1,5 +1,15 @@
 from setuptools import setup
+import logging
 import os
+
+readme_filename = os.path.join(os.path.dirname(__file__), 'README.md')
+
+try:
+    with open(readme_filename, 'r') as f:
+        readme_markdown = f.read()
+except:
+    logging.warning("Failed to load %s" % readme_filename)
+    readme_markdown = ""
 
 try:
     with open('requirements.txt', 'r') as fd:
@@ -11,8 +21,9 @@ except FileNotFoundError:
 if __name__ == '__main__':
     setup(
         name='flowdec',
-        version='1.0.0',
+        version='1.0.1',
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
+        long_description=readme_markdown,
         author="Eric Czech",
         author_email="eric@hammerlab.org",
         url="https://github.com/hammerlab/flowdec",
