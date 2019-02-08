@@ -8,8 +8,9 @@ readme_path = osp.join(osp.dirname(osp.dirname(__file__)), 'README.md')
 try:
     with open(readme_path, 'r') as f:
         readme_markdown = f.read()
+    logging.info("Succesfully loaded readme markdown from %s" % readme_path)
 except:
-    logging.warning("Failed to load %s" % readme_path)
+    logging.warning("Failed to load readme markdown from %s" % readme_path)
     readme_markdown = ""
 
 try:
@@ -22,7 +23,7 @@ except FileNotFoundError:
 if __name__ == '__main__':
     setup(
         name='flowdec',
-        version='1.0.3',
+        version='1.0.4',
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
         long_description=readme_markdown,
         long_description_content_type="text/markdown",
