@@ -11,7 +11,7 @@ except FileNotFoundError:
 if __name__ == '__main__':
     setup(
         name='flowdec',
-        version='0.0.1',
+        version='1.0.0',
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
         author="Eric Czech",
         author_email="eric@hammerlab.org",
