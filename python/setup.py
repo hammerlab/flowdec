@@ -25,6 +25,7 @@ if __name__ == '__main__':
         version='1.0.1',
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
         long_description=readme_markdown,
+        long_description_content_type="text/markdown",
         author="Eric Czech",
         author_email="eric@hammerlab.org",
         url="https://github.com/hammerlab/flowdec",
