@@ -1,14 +1,15 @@
 from setuptools import setup
 import logging
+import os.path as osp
 import os
 
-readme_filename = os.path.join(os.path.dirname(__file__), 'README.md')
+readme_path = osp.join(osp.dirname(osp.dirname(__file__)), 'README.md')
 
 try:
-    with open(readme_filename, 'r') as f:
+    with open(readme_path, 'r') as f:
         readme_markdown = f.read()
 except:
-    logging.warning("Failed to load %s" % readme_filename)
+    logging.warning("Failed to load %s" % readme_path)
     readme_markdown = ""
 
 try:
