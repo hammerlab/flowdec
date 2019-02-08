@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/hammerlab/flowdec.svg?branch=master)](https://travis-ci.org/hammerlab/flowdec)
-
+ 
 # Flowdec
 
 **Flowdec** is a library containing [TensorFlow](https://github.com/tensorflow/tensorflow) (TF) implementations of image and signal deconvolution algorithms.  Currently, only [Richardson-Lucy Deconvolution](https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution) has been implemented but others may come in the future.
