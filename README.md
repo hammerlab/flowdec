@@ -117,7 +117,7 @@ python examples/scripts/deconvolution.py \
 
 ### Java
 
-- [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/flowdec/examples/MultiGPUExample.java) - Prototype example for how to (hopefully) be able to execute deconvolution against multiple GPUs in parallel
+- [Multi-GPU Example](java/flowdec/src/main/java/org/hammerlab/flowdec/examples/MultiGPUExample.java) - Prototype example for how to be able to execute deconvolution against multiple GPUs in parallel (not tested yet -- waiting for the use case to come up though it is very likely possible to do)
 
 ## Installation
 
