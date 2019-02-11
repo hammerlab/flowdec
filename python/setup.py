@@ -3,7 +3,7 @@ import logging
 import os.path as osp
 import os
 
-readme_path = osp.join(osp.dirname(osp.dirname(__file__)), 'README.md')
+readme_path = osp.realpath(osp.join(osp.dirname(__file__), '..', 'README.md'))
 
 try:
     with open(readme_path, 'r') as f:
@@ -23,7 +23,7 @@ except FileNotFoundError:
 if __name__ == '__main__':
     setup(
         name='flowdec',
-        version='1.0.0',
+        version='1.0.7',
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
         long_description=readme_markdown,
         long_description_content_type="text/markdown",
