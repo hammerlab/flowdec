@@ -135,7 +135,7 @@ enabled version of `tensorflow` installed by running:
 pip install flowdec[tf]
 ```
 
-If neither `[tf]` or `[tf_gpu]` are specified, tensorflow installation is left
+If neither `[tf]` nor `[tf_gpu]` are specified, tensorflow installation is left
 as an externally managed prerequisite.
 
 Alternatively, the project could be installed from source by doing the following:
