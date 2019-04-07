@@ -263,7 +263,9 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             kernt = tf.cast(ifftshift(pad_around_center(kernh, tf.shape(datat))), self.fft_dtype)
 
         # Infer available TF FFT functions based on predefined number of data dimensions
-        fft_fwd, fft_rev = fft_utils_tf.get_fft_tf_fns(self.n_dims, real_domain_only=self.real_domain_fft)
+        # TODO: Find a way to determine dimensionality of images separately from batch dimension and
+        # update the rank used to get fft fns excluding batch dim
+        fft_fwd, fft_rev = fft_utils_tf.get_fft_tf_fns(min(self.n_dims, 3), real_domain_only=self.real_domain_fft)
 
         # Determine intermediate kernel representation necessary based on domain specified to
         # carry out computations

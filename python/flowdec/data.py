@@ -20,8 +20,6 @@ class Acquisition(object):
             kernel: Optional kernel assumed to have been used in generating the observed data (i.e. a PSF)
             actual: Optional ground-truth data useful for synthetic tests and validation
         """
-        if data.ndim not in [1, 2, 3]:
-            raise ValueError('Number of data and kernel dimensions must be 1, 2, or 3')
         self.data = data
         self.kernel = kernel
         self.actual = actual
