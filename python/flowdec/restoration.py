@@ -78,8 +78,8 @@ class Deconvolver(metaclass=abc.ABCMeta):
             )
 
         with tf.Session(config=session_config, graph=self.graph.tf_graph) as sess:
-            data_dict = {self.graph.inputs[k]:v for k, v in acquisition.to_feed_dict().items()}
-            args_dict = {self.graph.inputs[k]:v for k, v in input_kwargs.items() if v is not None}
+            data_dict = {self.graph.inputs[k]: v for k, v in acquisition.to_feed_dict().items()}
+            args_dict = {self.graph.inputs[k]: v for k, v in input_kwargs.items() if v is not None}
             res = sess.run(self.graph.outputs, feed_dict={**data_dict, **args_dict})
             return res
 
@@ -225,8 +225,9 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         padminh = tf.placeholder_with_default(tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
 
         # Data and kernel should have shapes (z, height, width)
-        datah = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='data'))
-        kernh = self._wrap_input(tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='kernel'))
+        dataph = tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='data')
+        kernph = tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='kernel')
+        datah, kernh = self._wrap_input(dataph), self._wrap_input(kernph)
 
         # Add assertion operations to validate padding mode, start mode, and data/kernel dimensions
         flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_NONE)], axis=0)
@@ -318,7 +319,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         result = tf.identity(self._wrap_output(result, {'data': datah, 'kernel': kernh}), name='result')
 
         inputs = {
-            'niter': niter, 'data': datah, 'kernel': kernh,
+            'niter': niter, 'data': dataph, 'kernel': kernph,
             'pad_mode': padmodh, 'pad_min': padminh, 'start_mode': smodeh
         }
         outputs = {
