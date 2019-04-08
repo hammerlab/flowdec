@@ -174,7 +174,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         n_dims: Rank of tensors to be used as inputs (i.e. number of dimensions); Note that the order of the dimensions and
             their interpretation (e.g. x vs y vs z) is up to the user and any convention can be adopted so long as
             all data and kernel matrices use the same convention
-        pad_mode: Padding mode for optimal FFT performance; One of ['log2', 'none'] (case-insensitive, default 'log2')
+        pad_mode: Padding mode for optimal FFT performance; One of ['log2', '2357' ,'none'] (case-insensitive, default 'log2')
         pad_min: Minimum padding to add to each dimension; Should by array or list of numbers equal
             to extension in each dimension;  For example, "np.array([0, 0, 5])" would do nothing to x and
             y padding but would force padding in z-direction to be at least 5 if using the xyz convention
