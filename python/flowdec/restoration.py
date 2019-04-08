@@ -2,7 +2,7 @@
 import abc
 import tensorflow as tf
 from flowdec import fft_utils_tf
-from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, OPTIMAL_PAD_MODES, PADF_REFLECT, PAD_FILL_MODES
+from flowdec.fft_utils_tf import OPM_LOG2, OPM_2357, OPM_NONE, OPTIMAL_PAD_MODES, PADF_REFLECT, PAD_FILL_MODES
 from flowdec.fft_utils_tf import optimize_dims, ifftshift
 from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_observer
 
@@ -230,7 +230,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         datah, kernh = self._wrap_input(dataph), self._wrap_input(kernph)
 
         # Add assertion operations to validate padding mode, start mode, and data/kernel dimensions
-        flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_NONE)], axis=0)
+        flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_2357), tf.equal(padmodh, OPM_NONE)], axis=0)
         assert_pad_mode = tf.assert_greater(
                 tf.reduce_sum(tf.cast(flag_pad_mode, tf.int32)), 0,
                 message='Pad mode not valid', data=[padmodh])
@@ -254,8 +254,12 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             datat = tf.cond(
                 tf.equal(padmodh, OPM_LOG2),
                 lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
-                lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
-            )
+                tf.cond(
+                    tf.equal(padmodh, OPM_2357), 
+                    lambda: pad_around_center(optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
+                    lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
+                    )
+                )
 
             # Pad kernel (with zeros only) to equal dimensions of data tensor and run "circular"
             # transformation as this algorithm is based on circular convolutions and the results
