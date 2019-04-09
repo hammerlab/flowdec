@@ -1,3 +1,4 @@
+# rainbow table with optimal dimensions for cuFFT
 # This code was automatically generated: 
 # See https://github.com/VolkerH/Optimal-cuFFT-dimensions-in-Python
 

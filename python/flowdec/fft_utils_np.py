@@ -1,11 +1,18 @@
 """ Numpy implementations of various FFT utilities used for testing and validation """
 import numpy as np
 
+
 OPM_FFTP = 'FFTPACK'
 OPM_LOG2 = 'LOG2'
 OPM_NONE = 'NONE'
-OPTIMAL_PAD_MODES = [OPM_NONE, OPM_LOG2, OPM_FFTP]
+OPM_2357 = '2357'
+OPTIMAL_PAD_MODES = [OPM_NONE, OPM_2357, OPM_LOG2, OPM_FFTP]
 
+
+def _rainbow_next_largest(n):
+    from flowdec.fft_pad_rainbow import _good_dimensions
+    from bisect import bisect_left
+    return _good_dimensions[bisect_left(_good_dimensions, n)]
 
 def optimize_dims(dims, mode):
     """Computes FFT Length for data padded out to optimize FFT implementations"""
@@ -15,6 +22,8 @@ def optimize_dims(dims, mode):
     # Round FFT Length up to next nearest optimal value based on mode given
     if mode == OPM_LOG2:
         return 2 ** np.ceil(np.log2(dims)).astype(int)
+    elif mode == OPM_2357:
+        return np.array([_rainbow_next_largest(d) for d in dims])
     elif mode == OPM_FFTP:
         return np.array([fftpack.helper.next_fast_len(int(sz)) for sz in dims])
     elif mode != OPM_NONE:

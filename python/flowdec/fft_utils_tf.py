@@ -73,9 +73,7 @@ def optimize_dims(dims, mode):
     elif mode == OPM_2357:
         rainbow = tf.cast(tf.placeholder_with_default(_good_dimensions, (len(_good_dimensions)), "rainbow"), tf.int32)
         padlookup = lambda n: rainbow[tf.reduce_min(tf.where(tf.greater_equal(rainbow, n)))]
-        tmp = tf.cast(tf.map_fn(padlookup, dims), dims.dtype)
-        print(tmp)
-        return(tmp)
+        return tf.cast(tf.map_fn(padlookup, dims), dims.dtype)
     elif mode != OPM_NONE:
         raise ValueError('Padding mode "{}" invalid'.format(mode))
     return dims
