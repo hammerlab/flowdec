@@ -253,8 +253,10 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             pad_shape = tf.shape(datah) + padminh
             datat = tf.cond(tf.equal(padmodh, OPM_2357),
                 lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_2357), mode=self.pad_fill),
+                lambda: tf.cond(tf.equal(padmodh, OPM_LOG2),
+                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
                 lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
-            )
+            ))
             #debug_size = optimize_dims(pad_shape, "2357")
             """                 tf.equal(padmodh, OPM_LOG2),
                             lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
