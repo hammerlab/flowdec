@@ -257,16 +257,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
                 lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
                 lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
             ))
-            #debug_size = optimize_dims(pad_shape, "2357")
-            """                 tf.equal(padmodh, OPM_LOG2),
-                            lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
-                            tf.cond(
-                                tf.equal(padmodh, OPM_2357), 
-                                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_2357), mode=self.pad_fill),
-                                lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
-                                )
-                            )
-            """
+
             # Pad kernel (with zeros only) to equal dimensions of data tensor and run "circular"
             # transformation as this algorithm is based on circular convolutions and the results
             # will have half spaces swapped otherwise
