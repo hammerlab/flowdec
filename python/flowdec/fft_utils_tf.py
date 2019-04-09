@@ -1,6 +1,6 @@
 """ TensorFlow utilities related to FFT padding and function selection """
 import tensorflow as tf
-from flowdec.fft_pad_rainbow import pad_rainbow2357
+from flowdec.fft_pad_rainbow import _good_dimensions
 
 OPM_LOG2 = 'LOG2'
 OPM_NONE = 'NONE'
@@ -71,7 +71,11 @@ def optimize_dims(dims, mode):
         bases = tf.ceil(tf.log(tf.cast(dims, tf.float32)) / tf.log(2.0))
         return tf.cast(tf.pow(2.0, bases), dims.dtype)
     elif mode == OPM_2357:
-        return tf.cast(pad_rainbow2357(dims), dims.dtype)
+        rainbow = tf.cast(tf.placeholder_with_default(_good_dimensions, (len(_good_dimensions)), "rainbow"), tf.int32)
+        padlookup = lambda n: rainbow[tf.reduce_min(tf.where(tf.greater_equal(rainbow, n)))]
+        tmp = tf.cast(tf.map_fn(padlookup, dims), dims.dtype)
+        print(tmp)
+        return(tmp)
     elif mode != OPM_NONE:
         raise ValueError('Padding mode "{}" invalid'.format(mode))
     return dims

@@ -251,16 +251,20 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             # (after adding a minimum padding as well, if given) to avoid use of
             # Bluestein algorithm in favor of significantly faster Cooley-Tukey FFT
             pad_shape = tf.shape(datah) + padminh
-            datat = tf.cond(
-                tf.equal(padmodh, OPM_LOG2),
-                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
-                tf.cond(
-                    tf.equal(padmodh, OPM_2357), 
-                    lambda: pad_around_center(optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
-                    lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
-                    )
-                )
-
+            datat = tf.cond(tf.equal(padmodh, OPM_2357),
+                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_2357), mode=self.pad_fill),
+                lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
+            )
+            #debug_size = optimize_dims(pad_shape, "2357")
+            """                 tf.equal(padmodh, OPM_LOG2),
+                            lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
+                            tf.cond(
+                                tf.equal(padmodh, OPM_2357), 
+                                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_2357), mode=self.pad_fill),
+                                lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
+                                )
+                            )
+            """
             # Pad kernel (with zeros only) to equal dimensions of data tensor and run "circular"
             # transformation as this algorithm is based on circular convolutions and the results
             # will have half spaces swapped otherwise
@@ -332,7 +336,9 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             'result': result,
             'data_shape': tf.shape(datah), 'kern_shape': tf.shape(kernh),
             'pad_shape': pad_shape, 'pad_mode': padmodh,
-            'pad_min': padminh, 'start_mode': smodeh
+            'datat_shape': tf.shape(datat),
+            'pad_min': padminh, 'start_mode': smodeh,
+            #'debug_size': debug_size
         }
 
         return inputs, outputs
