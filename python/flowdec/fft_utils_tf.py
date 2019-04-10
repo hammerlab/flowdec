@@ -1,9 +1,11 @@
 """ TensorFlow utilities related to FFT padding and function selection """
 import tensorflow as tf
+from flowdec.fft_pad_rainbow import _good_dimensions
 
 OPM_LOG2 = 'LOG2'
 OPM_NONE = 'NONE'
-OPTIMAL_PAD_MODES = [OPM_NONE, OPM_LOG2]
+OPM_2357 = '2357'
+OPTIMAL_PAD_MODES = [OPM_NONE, OPM_LOG2, OPM_2357]
 
 PADF_REFLECT = 'REFLECT'
 PADF_SYMMETRIC = 'SYMMETRIC'
@@ -55,6 +57,7 @@ def optimize_dims(dims, mode):
         dims: A 1-D integer tensor with dimensions to be optimized (e.g. results from `get_fft_pad_dims`)
         mode: Determines methodology used to extend dimensions to optimal values; one of:
             - "log2" - Will round dimensions up to next power of 2
+            - "2357" - Will round to dimensions that are a product of factors in 2,3,5,7
             - "none" - Will leave dimensions unaltered
     Returns:
 
@@ -67,6 +70,10 @@ def optimize_dims(dims, mode):
         # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/signal/python/ops/spectral_ops.py
         bases = tf.ceil(tf.log(tf.cast(dims, tf.float32)) / tf.log(2.0))
         return tf.cast(tf.pow(2.0, bases), dims.dtype)
+    elif mode == OPM_2357:
+        rainbow = tf.cast(tf.placeholder_with_default(_good_dimensions, (len(_good_dimensions)), "rainbow"), tf.int32)
+        padlookup = lambda n: rainbow[tf.reduce_min(tf.where(tf.greater_equal(rainbow, n)))]
+        return tf.cast(tf.map_fn(padlookup, dims), dims.dtype)
     elif mode != OPM_NONE:
         raise ValueError('Padding mode "{}" invalid'.format(mode))
     return dims

@@ -46,16 +46,23 @@ class TestFFTUtils(unittest.TestCase):
     def test_optimize_padding(self):
         """Verify "round-up" of dimensions to those optimal for FFT"""
         self._test_optimize_padding(np.ones((1)), np.ones((1)), 'log2', np.array([1]))
+        self._test_optimize_padding(np.ones((1)), np.ones((1)), '2357', np.array([2]))
 
         self._test_optimize_padding(np.ones((10, 5)), np.ones((6, 3)), 'log2', np.array([16, 8]))
         self._test_optimize_padding(np.ones((10, 5)), np.ones((7, 4)), 'log2', np.array([16, 8]))
         self._test_optimize_padding(np.ones((10, 5)), np.ones((8, 5)), 'log2', np.array([32, 16]))
+
+        self._test_optimize_padding(np.ones((355, 11)), np.ones((1, 1)), '2357', np.array([360, 12]))
+        self._test_optimize_padding(np.ones((10, 5)), np.ones((1, 1)), '2357', np.array([10, 5]))
+        self._test_optimize_padding(np.ones((10, 6)), np.ones((8, 6)), '2357', np.array([18, 12]))
+
 
         self._test_optimize_padding(np.ones((10, 5)), np.ones((6, 3)), 'none', np.array([15, 7]))
         self._test_optimize_padding(np.ones((10, 5)), np.ones((7, 4)), 'none', np.array([16, 8]))
         self._test_optimize_padding(np.ones((10, 5)), np.ones((8, 5)), 'none', np.array([17, 9]))
 
         self._test_optimize_padding(np.ones((10, 5, 3)), np.ones((8, 5, 1)), 'log2', np.array([32, 16, 4]))
+        self._test_optimize_padding(np.ones((10, 5, 3)), np.ones((8, 5, 1)), '2357', np.array([18, 9, 3]))
 
         # Test invalid padding mode
         with self.assertRaises(ValueError):

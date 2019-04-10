@@ -2,7 +2,7 @@
 import abc
 import tensorflow as tf
 from flowdec import fft_utils_tf
-from flowdec.fft_utils_tf import OPM_LOG2, OPM_NONE, OPTIMAL_PAD_MODES, PADF_REFLECT, PAD_FILL_MODES
+from flowdec.fft_utils_tf import OPM_LOG2, OPM_2357, OPM_NONE, OPTIMAL_PAD_MODES, PADF_REFLECT, PAD_FILL_MODES
 from flowdec.fft_utils_tf import optimize_dims, ifftshift
 from flowdec.tf_ops import pad_around_center, unpad_around_center, tf_observer
 
@@ -174,7 +174,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         n_dims: Rank of tensors to be used as inputs (i.e. number of dimensions); Note that the order of the dimensions and
             their interpretation (e.g. x vs y vs z) is up to the user and any convention can be adopted so long as
             all data and kernel matrices use the same convention
-        pad_mode: Padding mode for optimal FFT performance; One of ['log2', 'none'] (case-insensitive, default 'log2')
+        pad_mode: Padding mode for optimal FFT performance; One of ['log2', '2357' ,'none'] (case-insensitive, default 'log2')
         pad_min: Minimum padding to add to each dimension; Should by array or list of numbers equal
             to extension in each dimension;  For example, "np.array([0, 0, 5])" would do nothing to x and
             y padding but would force padding in z-direction to be at least 5 if using the xyz convention
@@ -230,7 +230,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         datah, kernh = self._wrap_input(dataph), self._wrap_input(kernph)
 
         # Add assertion operations to validate padding mode, start mode, and data/kernel dimensions
-        flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_NONE)], axis=0)
+        flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_2357), tf.equal(padmodh, OPM_NONE)], axis=0)
         assert_pad_mode = tf.assert_greater(
                 tf.reduce_sum(tf.cast(flag_pad_mode, tf.int32)), 0,
                 message='Pad mode not valid', data=[padmodh])
@@ -251,11 +251,12 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             # (after adding a minimum padding as well, if given) to avoid use of
             # Bluestein algorithm in favor of significantly faster Cooley-Tukey FFT
             pad_shape = tf.shape(datah) + padminh
-            datat = tf.cond(
-                tf.equal(padmodh, OPM_LOG2),
+            datat = tf.cond(tf.equal(padmodh, OPM_2357),
+                lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_2357), mode=self.pad_fill),
+                lambda: tf.cond(tf.equal(padmodh, OPM_LOG2),
                 lambda: pad_around_center(datah, optimize_dims(pad_shape, OPM_LOG2), mode=self.pad_fill),
                 lambda: pad_around_center(datah, pad_shape, mode=self.pad_fill)
-            )
+            ))
 
             # Pad kernel (with zeros only) to equal dimensions of data tensor and run "circular"
             # transformation as this algorithm is based on circular convolutions and the results
@@ -328,7 +329,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             'result': result,
             'data_shape': tf.shape(datah), 'kern_shape': tf.shape(kernh),
             'pad_shape': pad_shape, 'pad_mode': padmodh,
-            'pad_min': padminh, 'start_mode': smodeh
+            'datat_shape': tf.shape(datat),
+            'pad_min': padminh, 'start_mode': smodeh,
         }
 
         return inputs, outputs
