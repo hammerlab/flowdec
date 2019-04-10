@@ -331,7 +331,6 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             'pad_shape': pad_shape, 'pad_mode': padmodh,
             'datat_shape': tf.shape(datat),
             'pad_min': padminh, 'start_mode': smodeh,
-            #'debug_size': debug_size
         }
 
         return inputs, outputs
