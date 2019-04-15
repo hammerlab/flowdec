@@ -14,69 +14,62 @@ def dl2_enabled():
 
 class TestRestoration(unittest.TestCase):
 
-    def _validate_restoration(self, acqs, n_iter, thresholds):
+    def _validate_restoration(self, acqs, n_iter, thresholds, dtype):
 
         # Assume DL2 use only if threshold provided for it
         use_dl2 = 'dl2' in thresholds and thresholds['dl2']
 
         # Run all deconvolution implementations on each of the given image acquisitions
-        res = [tfv.run_deconvolutions(a, n_iter=n_iter, dl2=use_dl2) for a in acqs]
+        res = [tfv.run_deconvolutions(a, n_iter=n_iter, dl2=use_dl2, dtype=dtype) for a in acqs]
         scores = [r['scores'] for r in res]
 
-        # TODO: Move this to external documentation somewhere
-        # In the event of a test failure, this is useful debugging information especially when analyzed via the
-        # python/examples/Deconvolution - Unit Test Debugging.ipynb notebook:
-        # import pickle
-        # idx = 1
-        # with open('/tmp/flowdec-ut-debug-data.pkl', 'wb') as fd:
-        #     pickle.dump(res[idx], fd)
-        # print(scores)
-        # import pandas as pd
-        # print(pd.DataFrame(scores))
+        keys = res[0]['scores'].keys()
+        tgt_keys = [k for k in keys if k.startswith('tf')]
+        cmp_keys = [k for k in keys if k not in tgt_keys]
 
-        tf_key = 'tf'
-        for k in res[0]['scores'].keys():
-            if k == tf_key:
-                continue
-            thresh = thresholds.get(k, 1.)
-            flags = np.array([s[tf_key] > s[k] for s in scores])
-            self.assertTrue(np.mean(flags) >= thresh,
-                msg='TF scores not >= {}% of {} scores (pct better = {}) (all scores = {})'
-                        .format(thresh * 100, k, 100 * np.mean(flags), '\n'.join([str(m) for m in scores])))
+        for kt in tgt_keys:
+            for kc in cmp_keys:
+                thresh = thresholds.get(kc, 1.)
+                cmp_scores = [(s[kt], s[kc]) for s in scores]
+                flags = np.array([v[0] > v[1] for v in cmp_scores])
+                self.assertTrue(
+                    np.mean(flags) >= thresh,
+                    msg='Flowdec scores (key = {}) not >= {:.4f}% of {} scores (pct better = {:.4f}) (all scores = {})'
+                        .format(kt, thresh * 100, kc, 100 * np.mean(flags), '\n'.join([str(s) for s in scores]))
+                )
 
     def test_bars(self):
         """Test reconstruction of blurred "Hollow Bars" volume"""
         n_iter = 10
         thresholds = {
             # Results should always improve on the original
-            'original': 1.,
-
-            # Results should also be better than DL2 and scikit-image most of the time
-            'sk': .75,
+            'original': 1.0,
             'dl2': .75 if dl2_enabled() else None
         }
 
         acq = fd_data.bars_25pct()
+        self.assertTrue(acq.data.shape == acq.kernel.shape == (32, 64, 64))
+        # shape: {'actual': (32, 64, 64), 'kernel': (32, 64, 64), 'data': (32, 64, 64)}
 
         # Initialize list of acquisitions to deconvolve
         acqs = [acq]
 
+        # Slice to give shape with odd dimensions as this is a better test of padding features
+        acq_slice = [slice(2, 29), slice(None, 57), slice(None, 57)]
+        acq = tfv.subset(acq, data_slice=acq_slice, kern_slice=acq_slice)
+        # shape: {'data': (27, 57, 57), 'actual': (27, 57, 57), 'kernel': (27, 57, 57)}
+        acqs += [acq]
+
         # Add translations to images and kernels to ensure that there aren't
         # any issues supporting non-symmetric inputs
         acqs += [
-            tfv.reblur(tfv.shift(acq, data_shift=(0, 10, 10))),
-            tfv.reblur(tfv.shift(acq, data_shift=(0, -10, -10))),
+            tfv.reblur(tfv.shift(acq, data_shift=(0, 4, 4))),
+            tfv.reblur(tfv.shift(acq, data_shift=(0, -4, -4))),
 
-            tfv.reblur(tfv.shift(acq, kern_shift=(0, 10, 10))),
-            tfv.reblur(tfv.shift(acq, kern_shift=(0, -10, -10))),
+            tfv.reblur(tfv.shift(acq, kern_shift=(0, 4, 4))),
+            tfv.reblur(tfv.shift(acq, kern_shift=(0, -4, -4))),
 
             tfv.reblur(tfv.shift(acq, data_shift=(-3, 5, -5), kern_shift=(-3, 5, -5)))
-        ]
-
-        # Subset image and kernel to make sure that padding of inputs for fft is added
-        # and then cropped out correctly (tests asymmetries and non-power-of-2 dimensions)
-        acqs += [
-            tfv.reblur(tfv.subset(acq, kern_slice=[slice(None, 24), slice(None, 48), slice(None, 48)])),
         ]
 
         # Validate that downsampling the original volume also causes no issues
@@ -85,7 +78,7 @@ class TestRestoration(unittest.TestCase):
             tfv.reblur(tfv.downsample(acq, data_factor=.5, kern_factor=.5))
         ]
 
-        self._validate_restoration(acqs, n_iter, thresholds=thresholds)
+        self._validate_restoration(acqs, n_iter, thresholds=thresholds, dtype=np.uint16)
 
     def test_basic_shape_2d(self):
         """Validate recovery of simple 2 dimensional shape"""

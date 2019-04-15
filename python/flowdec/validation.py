@@ -2,8 +2,7 @@
 from flowdec import data as fd_data
 from flowdec import restoration as fd_restoration
 from flowdec import exec as fd_exec
-from flowdec.fft_utils_tf import OPM_LOG2
-from skimage import restoration as sk_restoration
+from flowdec.fft_utils_tf import OPTIMAL_PAD_MODES
 from skimage.transform import resize
 from skimage.exposure import rescale_intensity
 from scipy.ndimage.interpolation import shift as scipy_shift
@@ -40,8 +39,10 @@ def subset(acq, data_slice=None, kern_slice=None):
 def downsample(acq, data_factor=None, kern_factor=None):
     """Downsample acquisition data by the given factors"""
     def resize_fn(img, factor):
-        img = rescale_intensity(img, out_range=(0., 1.))
-        return resize(img, [int(sz * factor) for sz in img.shape], mode='constant')
+        return resize(
+            img, [int(sz * factor) for sz in img.shape], mode='constant',
+            anti_aliasing=True, order=1, preserve_range=True
+        ).astype(img.dtype)
     return mutate(acq,
         data_fn=None if not data_factor else lambda d: resize_fn(d, data_factor),
         kern_fn=None if not kern_factor else lambda k: resize_fn(k, kern_factor)
@@ -50,10 +51,6 @@ def downsample(acq, data_factor=None, kern_factor=None):
 
 def decon_tf(acq, n_iter, **kwargs):
     return fd_restoration.richardson_lucy(acq, n_iter, **kwargs)
-
-
-def decon_sk(acq, n_iter):
-    return sk_restoration.richardson_lucy(acq.data, acq.kernel, iterations=n_iter, clip=False)
 
 
 def decon_dl2(acq, n_iter, pad_mode):
@@ -67,7 +64,7 @@ def binarize(img):
 
 def score(img_pred, img_true):
     """Convert similarity score between images to validate"""
-    return compare_ssim(img_pred.max(axis=0), img_true.max(axis=0))
+    return compare_ssim(img_pred, img_true, data_range=img_true.max() - img_true.min())
 
 
 def reblur(acq, scale=.05, seed=1):
@@ -87,7 +84,8 @@ def reblur(acq, scale=.05, seed=1):
     sd = scale * (acq.actual.max() - acq.actual.min())
     np.random.seed(seed)
     noise = np.random.poisson(sd, size=acq.actual.shape)
-    data = fftconvolve(acq.actual, acq.kernel, 'same') + noise
+    kernel = acq.kernel / acq.kernel.sum()  # Normalize to 0-1
+    data = fftconvolve(acq.actual, kernel, 'same') + noise
     return fd_data.Acquisition(
         data=data.astype(acq.data.dtype),
         kernel=acq.kernel,
@@ -95,25 +93,33 @@ def reblur(acq, scale=.05, seed=1):
     )
 
 
-def run_deconvolutions(acq, n_iter, dl2=False):
+def run_deconvolutions(acq, n_iter, dl2=False, dtype=None):
     """ Perform deconvolution using several different implementations
 
     Args:
         acq: Acquisition to deconvolve
         n_iter: Number of iterations to use
         dl2: Whether or not to include DeconvolutionLab2 implementation
+        dtype: Data type of original image (used to determine value ranges)
     """
     res = {'data': {}, 'scores': {}, 'acquisition': acq}
-    res['data']['tf'] = decon_tf(acq, n_iter, pad_mode=OPM_LOG2)
-    res['data']['sk'] = decon_sk(acq, n_iter)
+
+    if dtype is None:
+        dtype = acq.data.dtype
+    clip_range = np.iinfo(dtype).min, np.iinfo(dtype).max
+
+    # Create result for each padding mode
+    for pad_mode in OPTIMAL_PAD_MODES:
+        res['data']['tf_' + pad_mode] = decon_tf(acq, n_iter, pad_mode=pad_mode).clip(*clip_range)
+
     if dl2:
         res['data']['dl2'] = decon_dl2(acq, n_iter, pad_mode=OPM_LOG2)
 
     # Compute similarity score between blurred image and ground-truth
-    res['scores']['original'] = score(binarize(acq.data), binarize(acq.actual))
+    res['scores']['original'] = score(acq.data, acq.actual)
 
     # Compute similarity scores between deconvolved results and ground-truth
     for k in res['data'].keys():
-        res['scores'][k] = score(binarize(res['data'][k]), binarize(acq.actual))
+        res['scores'][k] = score(res['data'][k], acq.actual)
 
     return res

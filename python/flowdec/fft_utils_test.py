@@ -56,7 +56,6 @@ class TestFFTUtils(unittest.TestCase):
         self._test_optimize_padding(np.ones((10, 5)), np.ones((1, 1)), '2357', np.array([10, 5]))
         self._test_optimize_padding(np.ones((10, 6)), np.ones((8, 6)), '2357', np.array([18, 12]))
 
-
         self._test_optimize_padding(np.ones((10, 5)), np.ones((6, 3)), 'none', np.array([15, 7]))
         self._test_optimize_padding(np.ones((10, 5)), np.ones((7, 4)), 'none', np.array([16, 8]))
         self._test_optimize_padding(np.ones((10, 5)), np.ones((8, 5)), 'none', np.array([17, 9]))

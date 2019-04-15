@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.6.0-py3-gpu
+FROM tensorflow/tensorflow:1.6.0-gpu-py3
 
 RUN apt-get update && apt-get install -y --no-install-recommends git vim
 
