@@ -247,8 +247,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
 
         with tf.control_dependencies([assert_pad_mode, assert_start_mode, assert_shapes]):
 
-            # If configured to do so, expand dimensions of data array to power of 2 or 
-            # prime factor multiples (after adding a minimum padding as well, if given) 
+            # If configured to do so, expand dimensions of data array to power of 2 or
+            # prime factor multiples (after adding a minimum padding as well, if given)
             # to avoid use of Bluestein algorithm in favor of significantly faster Cooley-Tukey FFT
             pad_shape = tf.shape(datah) + padminh
             datat = tf.cond(tf.equal(padmodh, OPM_2357),

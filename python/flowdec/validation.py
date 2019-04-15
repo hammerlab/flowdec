@@ -2,9 +2,8 @@
 from flowdec import data as fd_data
 from flowdec import restoration as fd_restoration
 from flowdec import exec as fd_exec
-from flowdec.fft_utils_tf import OPTIMAL_PAD_MODES
+from flowdec.fft_utils_tf import OPTIMAL_PAD_MODES, OPM_LOG2
 from skimage.transform import resize
-from skimage.exposure import rescale_intensity
 from scipy.ndimage.interpolation import shift as scipy_shift
 from skimage.measure import compare_ssim
 from scipy.signal import fftconvolve
