@@ -204,6 +204,24 @@ To validate this much has been accomplished, there are two notebooks in the [pyt
 
 Thanks to Kyle Douglass for explaining some of the finer aspects of this Python [Gibson-Lanni PSF generator](http://kmdouglass.github.io/posts/implementing-a-fast-gibson-lanni-psf-solver-in-python.html), Jizhou Li for helping to better understand that diffraction model, Hadrien Mary for giving great context on the state of open-source deconvolution libraries, and Brian Northan for lending great advice/context on library performance, blind deconvolution and how point spread functions work in general.
 
+## Citation
+
+To cite Flowdec, please use this reference:
+
+```
+@article {Czech460980,
+	author = {Czech, Eric and Aksoy, Bulent Arman and Aksoy, Pinar and Hammerbacher, Jeff},
+	title = {Cytokit: A single-cell analysis toolkit for high dimensional fluorescent microscopy imaging},
+	elocation-id = {460980},
+	year = {2018},
+	doi = {10.1101/460980},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2018/12/14/460980},
+	eprint = {https://www.biorxiv.org/content/early/2018/12/14/460980.full.pdf},
+	journal = {bioRxiv}
+}
+```
+
 ## References
 
 - [1] D. Sage, L. Donati, F. Soulez, D. Fortun, G. Schmit, A. Seitz, R. Guiet, C. Vonesch, M. Unser<br>
