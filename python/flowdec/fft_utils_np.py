@@ -16,7 +16,7 @@ def _rainbow_next_largest(n):
 
 def optimize_dims(dims, mode):
     """Computes FFT Length for data padded out to optimize FFT implementations"""
-    from scipy import fftpack
+    from scipy import fft
     mode = mode.upper()
 
     # Round FFT Length up to next nearest optimal value based on mode given
@@ -25,7 +25,7 @@ def optimize_dims(dims, mode):
     elif mode == OPM_2357:
         return np.array([_rainbow_next_largest(d) for d in dims])
     elif mode == OPM_FFTP:
-        return np.array([fftpack.helper.next_fast_len(int(sz)) for sz in dims])
+        return np.array([fft.next_fast_len(int(sz)) for sz in dims])
     elif mode != OPM_NONE:
         raise ValueError('Padding mode "{}" invalid'.format(mode))
     return dims
