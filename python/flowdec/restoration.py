@@ -77,7 +77,7 @@ class Deconvolver(metaclass=abc.ABCMeta):
                 '"allow_soft_placement" to true in TF session configuration'
             )
 
-        with tf.Session(config=session_config, graph=self.graph.tf_graph) as sess:
+        with tf.compat.v1.Session(config=session_config, graph=self.graph.tf_graph) as sess:
             data_dict = {self.graph.inputs[k]: v for k, v in acquisition.to_feed_dict().items()}
             args_dict = {self.graph.inputs[k]: v for k, v in input_kwargs.items() if v is not None}
             res = sess.run(self.graph.outputs, feed_dict={**data_dict, **args_dict})
@@ -141,7 +141,7 @@ class FFTDeconvolver(Deconvolver):
 class FFTIterativeDeconvolver(FFTDeconvolver):
 
     def _get_niter(self):
-        return tf.placeholder(tf.int32, shape=(), name='niter')
+        return tf.compat.v1.placeholder(tf.int32, shape=(), name='niter')
 
 
 def richardson_lucy(acquisition, niter=10, pad_mode=DEFAULT_PAD_MODE, session_config=None, **kwargs):
@@ -220,28 +220,28 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         niter = self._get_niter()
 
         # Create argument placeholders with same defaults as those used at graph construction time
-        padmodh = tf.placeholder_with_default(DEFAULT_PAD_MODE, (), name='pad_mode')
-        smodeh = tf.placeholder_with_default(DEFAULT_START_MODE, (), name='start_mode')
-        padminh = tf.placeholder_with_default(tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
+        padmodh = tf.compat.v1.placeholder_with_default(DEFAULT_PAD_MODE, (), name='pad_mode')
+        smodeh = tf.compat.v1.placeholder_with_default(DEFAULT_START_MODE, (), name='start_mode')
+        padminh = tf.compat.v1.placeholder_with_default(tf.zeros(self.n_dims, dtype=tf.int32), self.n_dims, name='pad_min')
 
         # Data and kernel should have shapes (z, height, width)
-        dataph = tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='data')
-        kernph = tf.placeholder(self.dtype, shape=[None] * self.n_dims, name='kernel')
+        dataph = tf.compat.v1.placeholder(self.dtype, shape=[None] * self.n_dims, name='data')
+        kernph = tf.compat.v1.placeholder(self.dtype, shape=[None] * self.n_dims, name='kernel')
         datah, kernh = self._wrap_input(dataph), self._wrap_input(kernph)
 
         # Add assertion operations to validate padding mode, start mode, and data/kernel dimensions
         flag_pad_mode = tf.stack([tf.equal(padmodh, OPM_LOG2), tf.equal(padmodh, OPM_2357), tf.equal(padmodh, OPM_NONE)], axis=0)
-        assert_pad_mode = tf.assert_greater(
+        assert_pad_mode = tf.compat.v1.assert_greater(
                 tf.reduce_sum(tf.cast(flag_pad_mode, tf.int32)), 0,
                 message='Pad mode not valid', data=[padmodh])
 
         flag_start_mode = tf.stack([tf.equal(smodeh, SMODE_CONSTANT), tf.equal(smodeh, SMODE_INPUT)], axis=0)
-        assert_start_mode = tf.assert_greater(
+        assert_start_mode = tf.compat.v1.assert_greater(
                 tf.reduce_sum(tf.cast(flag_start_mode, tf.int32)), 0,
                 message='Start mode not valid', data=[smodeh])
 
         flag_shapes = tf.shape(datah) - tf.shape(kernh)
-        assert_shapes = tf.assert_greater_equal(
+        assert_shapes = tf.compat.v1.assert_greater_equal(
                 tf.reduce_sum(flag_shapes), 0,
                 message='Data shape must be >= kernel shape', data=[tf.shape(datah), tf.shape(kernh)])
 
@@ -274,7 +274,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         if self.real_domain_fft:
             kern_fft_conj = fft_fwd(tf.reverse(kernt, axis=tf.range(0, self.n_dims)))
         else:
-            kern_fft_conj = tf.conj(kern_fft)
+            kern_fft_conj = tf.math.conj(kern_fft)
 
         # Initialize resulting deconvolved image -- there are several sensible choices for this like the
         # original image or constant arrays, but some experiments show this to be better, and other
@@ -290,7 +290,7 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             return i <= niter
 
         def conv(data, kernel_fft):
-            return tf.real(fft_rev(fft_fwd(tf.cast(data, self.fft_dtype)) * kernel_fft))
+            return tf.math.real(fft_rev(fft_fwd(tf.cast(data, self.fft_dtype)) * kernel_fft))
 
         def body(i, decon):
             # Richardson-Lucy Iteration - logic taken largely from a combination of
@@ -334,4 +334,3 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         }
 
         return inputs, outputs
-

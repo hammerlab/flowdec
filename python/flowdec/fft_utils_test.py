@@ -114,9 +114,9 @@ class TestFFTUtils(unittest.TestCase):
         np_res = fft_utils_np.convolve(d, k)
 
         assert_almost_equal(tf_res, np_res, decimal=3)
-        self.assertEquals(tf_res.shape, np_res.shape)
+        self.assertEqual(tf_res.shape, np_res.shape)
         if actual is not None:
-            assert_array_equal(tf_res, actual)
+            assert_almost_equal(tf_res, actual, decimal=6)
 
     def test_convolution(self):
 

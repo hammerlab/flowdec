@@ -16,7 +16,7 @@ def tf_print(t, transform=None):
 
 def tf_observer(tensors, observer_fn):
     """Inject graph operation to observe but not alter tensor values
-    
+
     Args:
         t: List of tensors to send to observer
         observer_fn: Function with signature ```fn(tensors)``` where tensors will be a list
@@ -28,7 +28,7 @@ def tf_observer(tensors, observer_fn):
     def _observe(*args):
         observer_fn(*args)
         return np.array([0], dtype=np.int32)
-    observe_op = tf.py_func(_observe, tensors, tf.int32, stateful=True, name='observer')[0]
+    observe_op = tf.numpy_function(_observe, tensors, tf.int32, name='observer')[0]
     with tf.control_dependencies([observe_op]):
         ts = [tf.identity(t) for t in tensors]
     return ts

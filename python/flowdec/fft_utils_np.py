@@ -16,7 +16,7 @@ def _rainbow_next_largest(n):
 
 def optimize_dims(dims, mode):
     """Computes FFT Length for data padded out to optimize FFT implementations"""
-    from scipy.signal.signaltools import fftpack
+    from scipy import fftpack
     mode = mode.upper()
 
     # Round FFT Length up to next nearest optimal value based on mode given
@@ -50,10 +50,3 @@ def extract(data, base_dims, pad_dims):
     pad_slice_optim = tuple([slice(0, int(sz)) for sz in pad_dims])
 
     return data[pad_slice_optim][pad_slice]
-
-
-
-
-
-
-
