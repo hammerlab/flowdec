@@ -41,8 +41,8 @@ if __name__ == '__main__':
         ],
         install_requires=requires,
         extras_require={
-            "tf": ["tensorflow>=1.6.0"],
-            "tf_gpu": ["tensorflow-gpu>=1.6.0"],
+            "tf": ["tensorflow>=1.14.0"],
+            "tf_gpu": ["tensorflow-gpu>=1.14.0"],
         },
         packages=['flowdec', 'flowdec.cmd', 'flowdec.nb'],
         package_data={'flowdec': ['datasets/*/*.tif']},

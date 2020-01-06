@@ -1,4 +1,4 @@
-scikit-image
+scikit-image>=0.16.1
 matplotlib
 requests
-# `tensorflow` or `tensorflow-gpu` must be installed, as well.
+# `tensorflow` or `tensorflow-gpu` must be installed manually or via extras.
