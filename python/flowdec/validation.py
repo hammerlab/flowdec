@@ -5,7 +5,7 @@ from flowdec import exec as fd_exec
 from flowdec.fft_utils_tf import OPTIMAL_PAD_MODES, OPM_LOG2
 from skimage.transform import resize
 from scipy.ndimage.interpolation import shift as scipy_shift
-from skimage.measure import compare_ssim
+from skimage.metrics import structural_similarity
 from scipy.signal import fftconvolve
 import numpy as np
 
@@ -30,8 +30,8 @@ def shift(acq, data_shift=None, kern_shift=None):
 def subset(acq, data_slice=None, kern_slice=None):
     """Apply slice operation to acquisition data"""
     return mutate(acq,
-        data_fn=None if not data_slice else lambda d: d[data_slice],
-        kern_fn=None if not kern_slice else lambda k: k[kern_slice]
+        data_fn=None if not data_slice else lambda d: d[tuple(data_slice)],
+        kern_fn=None if not kern_slice else lambda k: k[tuple(kern_slice)]
     )
 
 
@@ -63,7 +63,7 @@ def binarize(img):
 
 def score(img_pred, img_true):
     """Convert similarity score between images to validate"""
-    return compare_ssim(img_pred, img_true, data_range=img_true.max() - img_true.min())
+    return structural_similarity(img_pred, img_true, data_range=img_true.max() - img_true.min())
 
 
 def reblur(acq, scale=.05, seed=1):
