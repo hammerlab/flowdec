@@ -23,7 +23,7 @@ except FileNotFoundError:
 if __name__ == '__main__':
     setup(
         name='flowdec',
-        version='1.0.7',
+        version='1.1.0',
         description="TensorFlow Implementations of Signal Deconvolution Algorithms",
         long_description=readme_markdown,
         long_description_content_type="text/markdown",
