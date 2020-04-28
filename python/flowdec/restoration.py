@@ -293,19 +293,43 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             return tf.math.real(fft_rev(fft_fwd(tf.cast(inputData, self.fft_dtype)) * kernel_fft))
 
         def body(i, decon):
-            # Richardson-Lucy Iteration - logic taken largely from a combination of
+            '''# Richardson-Lucy Iteration - logic taken largely from a combination of
             # the scikit-image (real domain) and DeconvolutionLab2 implementations (complex domain)
             # conv1 is the current model blurred with the PSF
             conv1 = conv(decon, kern_fft)
 
             # High-pass filter to avoid division by very small numbers (see DeconvolutionLab2)
-            blur1 = tf.where(conv1 < self.epsilon, tf.zeros_like(datat), datat / conv1, name='blur1')
+			blur1 = tf.where(conv1 < self.epsilon, tf.zeros_like(datat), datat / conv1, name='blur1')
 
             # conv2 is the blurred model convolved with the flipped PSF
             conv2 = conv(blur1, kern_fft_conj)
 
             # Positivity constraint on result for iteration
-            decon = tf.maximum(decon * conv2, 0.)
+			decon = tf.maximum(decon * conv2, 0.)
+            '''
+
+            # Gold algorithm, ratio method, simpler then RL, doesnt use flipped OTF
+            # conv1 is the current model blurred with the PSF
+            conv1 = conv(decon, kern_fft)
+
+            # High-pass filter to avoid division by very small numbers (see DeconvolutionLab2)
+            # we wont do it here as we will use the delta values in denom and numerrator of division to get blur2
+            # as per Stephan Ludwig et al 2019
+            # should normalise blur2 and decon each time because numbers get big and we risk overflow when multiplying in next step
+            conv1norm = conv1 / (tf.math.reduce_sum(conv1))
+            datatNorm = datat / (tf.math.reduce_sum(datat))
+            deltaParam = 0.001
+            ratio = (datatNorm + deltaParam) / (conv1norm + deltaParam)
+            #blur1 = tf.where(conv1 < self.epsilon, tf.zeros_like(datat), datat / conv1, name='blur1')
+            #ratioNorm = ratio / (tf.math.reduce_sum(ratio))
+            #deconNorm = decon / (tf.math.reduce_sum(decon))
+            # decon is the  normalised blurred model multiplied by the model
+            # Positivity constraint on result for iteration
+            decon = tf.maximum(decon * ratio, 0.)
+            #decon = tf.maximum(decon * conv2, 0.)
+            
+            # TODO - Smoothing every 5 iterations with gaussian or wiener. 
+            # TODO rescale back to input data sum intensity. , probably need to adjust deltaParam too. 
 
             # If given an "observer", pass the current image restoration and iteration counter to it
             if self.observer_fn is not None:

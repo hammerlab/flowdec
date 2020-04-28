@@ -33,7 +33,7 @@ import sys
 #import logging
 
 #send std output to a log file
-sys.stdout = open('FlowDecLog.txt', 'w')
+sys.stdout = open('FlowDecLogGold50.txt', 'w')
 #logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 startImports = time.process_time()   
@@ -66,7 +66,7 @@ print (PSF)
 kernel = imread(PSF)
 
 #base number of iterations - RL converges slowly so need tens of iterations or maybe hundreds. 
-base_iter = 50
+base_iter = 250
 
 
 # Create an observer function to monitor convergence, 
@@ -78,7 +78,7 @@ base_iter = 50
 # imgs = []
 def observer(decon_crop, i, decon_pad, conv1, *args):
     #imgs.append(decon_crop)
-    if i % 5 == 0:
+    if i % 10 == 0:
         sumRaw = raw.sum()
         sumBlurredModel = decon_crop.sum()
 	    # compute convergence residuals between raw image and blurred model image
