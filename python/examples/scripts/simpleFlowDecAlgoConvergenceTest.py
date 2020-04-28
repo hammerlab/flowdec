@@ -10,7 +10,7 @@
 
 # 22 april 2020 - what works today :
 # flowdec uses tensorflow which on nvidda GPU uses CUDA so need to install the stuff here
-# https://www.tensorflow.org/install/gpu   but.....those instructionsd seem to install incompatible stuff... so try
+# https://www.tensorflow.org/install/gpu   but.....those instructions seem to install incompatible stuff... so try
 # things were installed in this order and the script works and used the GPU
 #cuda toolkit 10.0 
 #cudnn-10.0 7.6.34.38 installed into C:/tools/
