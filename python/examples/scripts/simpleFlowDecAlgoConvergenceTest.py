@@ -1,7 +1,6 @@
 # Dan White March 2019-2020
-# simpleFlowDecTest.py 
-# because the example python script isnt working on my setup
-# try this as a simpler more direct test - which seems to work.
+# simpleFlowDecAlgoConvergenceTest.py 
+# A simple script usiing flowdec, testing convergence of the algorithm on test data
 
 # flowdec pip package install/update requirements for anaconda on win10 64 bit:
 
