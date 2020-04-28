@@ -1,6 +1,6 @@
 # Dan White March 2019-2020
 # simpleFlowDecAlgoConvergenceTest.py 
-# A simple script usiing flowdec, testing convergence of the algorithm on test data
+# A simple script using flowdec, testing convergence of the algorithm on test data
 
 # flowdec pip package install/update requirements for anaconda on win10 64 bit:
 
