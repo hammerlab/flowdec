@@ -66,10 +66,10 @@ print (PSF)
 kernel = imread(PSF)
 
 #base number of iterations - RL converges slowly so need tens of iterations or maybe hundreds. 
-base_iter = 100
+base_iter = 50
 
-'''
-# Create an observer function to monitor converegence, 
+
+# Create an observer function to monitor convergence, 
 # where the first argument is the current state of the
 # image as it is being deconvolved, i is the current iteration number (1-based),
 # third is the padded current guess image, and fourth is the value of covergence metric R,
@@ -78,7 +78,7 @@ base_iter = 100
 # imgs = []
 def observer(decon_crop, i, decon_pad, conv1, *args):
     #imgs.append(decon_crop)
-    if i % 1 == 0:
+    if i % 5 == 0:
         sumRaw = raw.sum()
         sumBlurredModel = decon_crop.sum()
 	    # compute convergence residuals between raw image and blurred model image
@@ -88,9 +88,9 @@ def observer(decon_crop, i, decon_pad, conv1, *args):
 		# let's try structural similarity (as it's supposed to be better then mean square error)
 		# which indeed seems to track convergence of this dataset in a way that seems to match the image results. 
         structSim = ssim(raw, decon_crop, data_range=decon_crop.max() - decon_crop.min())
-        print('Iter={}, RawSum={:.3f}, DeconSum={:.3f}, DeconMax={:.3f}, DeconStDev={:.3f}, SumResiduals={:.3f}, ConvergeR={:.16f}), SSIM= {:.3f})'.format(
+        print('Iter,{},RawSum,{:.3f},DeconSum,{:.3f},DeconMax,{:.3f},DeconStDev,{:.3f},SumResiduals,{:.3f},ConvergeR,{:.16f},SSIM,{:.3f}'.format(
 		   i, sumRaw, sumBlurredModel, decon_crop.max(), decon_crop.std(), convergenceResiduals.max(), convergenceR.max(), structSim.max()))
-'''
+
 # Run the deconvolution process and note that deconvolution initialization is best kept separate from 
 # execution since the "initialize" operation corresponds to creating a TensorFlow graph, which is a 
 # relatively expensive operation and should not be repeated across multiple executions
@@ -100,10 +100,10 @@ def observer(decon_crop, i, decon_pad, conv1, *args):
 # should work for doing different input data with same sizes of image and psf, 
 # eg a time series split into tiff 1 file per time point???? 
 startAlgoinit = time.process_time()   
-# with observer function to track concvergence
-#algo = fd_restoration.RichardsonLucyDeconvolver(raw.ndim, observer_fn=observer).initialize()
-#without observer function - much faster obvs. 
-algo = fd_restoration.RichardsonLucyDeconvolver(raw.ndim).initialize()
+# Run algorithm with observer function to track concvergence
+algo = fd_restoration.RichardsonLucyDeconvolver(raw.ndim, observer_fn=observer).initialize()
+# Run algorithm without observer function - much faster obvs. 
+#algo = fd_restoration.RichardsonLucyDeconvolver(raw.ndim).initialize()
 TFinitTime = (time.process_time() - startAlgoinit)
 
 # run the deconvolution itself
