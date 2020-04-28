@@ -289,17 +289,19 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
         def cond(i, decon):
             return i <= niter
 
-        def conv(data, kernel_fft):
-            return tf.math.real(fft_rev(fft_fwd(tf.cast(data, self.fft_dtype)) * kernel_fft))
+        def conv(inputData, kernel_fft):
+            return tf.math.real(fft_rev(fft_fwd(tf.cast(inputData, self.fft_dtype)) * kernel_fft))
 
         def body(i, decon):
             # Richardson-Lucy Iteration - logic taken largely from a combination of
             # the scikit-image (real domain) and DeconvolutionLab2 implementations (complex domain)
+            # conv1 is the current model blurred with the PSF
             conv1 = conv(decon, kern_fft)
 
             # High-pass filter to avoid division by very small numbers (see DeconvolutionLab2)
             blur1 = tf.where(conv1 < self.epsilon, tf.zeros_like(datat), datat / conv1, name='blur1')
 
+            # conv2 is the blurred model convolved with the flipped PSF
             conv2 = conv(blur1, kern_fft_conj)
 
             # Positivity constraint on result for iteration
@@ -309,7 +311,10 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             if self.observer_fn is not None:
                 # Remove any cropping that may have been added as this is usually not desirable in observers
                 decon_crop = unpad_around_center(decon, tf.shape(datah))
-                _, i, decon = tf_observer([decon_crop, i, decon], self.observer_fn)
+                # we can use these capurured observed tensors to evaluate eg convergence
+                # in eg. the observer function used.
+                _, i, decon, conv1  = tf_observer(
+				    [decon_crop, i, decon, conv1], self.observer_fn)
 
             return i + 1, decon
 
