@@ -30,11 +30,11 @@
 import time
 # for logging to text file
 import sys
-import logging
+#import logging
 
 #send std output to a log file
 sys.stdout = open('FlowDecLog.txt', 'w')
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 startImports = time.process_time()   
 from skimage.external.tifffile import imsave, imread
@@ -43,7 +43,7 @@ from flowdec import data as fd_data
 from flowdec import restoration as fd_restoration
 importsTime = (time.process_time() - startImports)
 
-# this seems to return 0 seconds, so maybe TF math is already imported by flowde? 
+# this seems to return 0 seconds, so maybe TF math is already imported by flowdec? 
 startTFMathImport = time.process_time()
 from tensorflow import math as tfmath
 importTFMathTime = (time.process_time() - startTFMathImport)
@@ -81,11 +81,11 @@ def observer(decon_crop, i, decon_pad, conv1, *args):
     if i % 1 == 0:
         sumRaw = raw.sum()
         sumBlurredModel = decon_crop.sum()
-	    #compute convergence residuals between raw image and blurred model image
-		# with currectn sted data these get bigger not smaller with iterations... weird..
+	    # compute convergence residuals between raw image and blurred model image
+		# with current test data these get bigger not smaller with iterations... weird..
         convergenceResiduals = abs(sumRaw - sumBlurredModel)
         convergenceR = convergenceResiduals / sumRaw
-		# lets try structural similarity (as it's supposed to be better then mean square error)
+		# let's try structural similarity (as it's supposed to be better then mean square error)
 		# which indeed seems to track convergence of this dataset in a way that seems to match the image results. 
         structSim = ssim(raw, decon_crop, data_range=decon_crop.max() - decon_crop.min())
         print('Iter={}, RawSum={:.3f}, DeconSum={:.3f}, DeconMax={:.3f}, DeconStDev={:.3f}, SumResiduals={:.3f}, ConvergeR={:.16f}), SSIM= {:.3f})'.format(
