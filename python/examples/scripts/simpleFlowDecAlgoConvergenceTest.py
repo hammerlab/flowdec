@@ -33,7 +33,7 @@ import sys
 import logging
 
 #send std output to a log file
-#sys.stdout = open('FlowDecLog.txt', 'w')
+sys.stdout = open('FlowDecLog.txt', 'w')
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 startImports = time.process_time()   
