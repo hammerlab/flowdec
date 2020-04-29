@@ -339,7 +339,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             # should normalise blur2 and decon each time because numbers get big and we risk overflow when multiplying in next step
             conv1norm = conv1 / (tf.math.reduce_sum(conv1))
             datatNorm = datat / (tf.math.reduce_sum(datat))
-            deltaParam = 0.001
+            # this value seems to work well fo rthe images that are normalised to sum of 1
+            deltaParam = 1e-4
             ratio = (datatNorm + deltaParam) / (conv1norm + deltaParam)
             #blur1 = tf.where(conv1 < self.epsilon, tf.zeros_like(datat), datat / conv1, name='blur1')
             #ratioNorm = ratio / (tf.math.reduce_sum(ratio))
