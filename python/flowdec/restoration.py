@@ -291,8 +291,29 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
 
         def conv(inputData, kernel_fft):
             return tf.math.real(fft_rev(fft_fwd(tf.cast(inputData, self.fft_dtype)) * kernel_fft))
+			
+        def gaussian_kernel(size: int,
+                    mean: float,
+                    std: float,
+                    ):
+            """Makes 3D gaussian Kernel for convolution."""
 
-        def body(i, decon):
+            d = tf.distributions.Normal(mean, std)
+
+            vals = d.prob(tf.range(start = -size, limit = size + 1, dtype = tf.float32))
+
+            gauss_kernel = tf.einsum('i,j,k->ijk',
+                                        vals,
+                                        vals,
+                                        vals)
+            # return the kernel normalised to sum =1
+            return gauss_kernel / tf.reduce_sum(gauss_kernel)
+
+        gaussKernel = gaussian_kernel(9, 1.0, 7.0)
+        # Expand dimensions of `gauss_kernel` for `tf.nn.conv3d` signature.
+        gaussKernel = gaussKernel[:, :, :, tf.newaxis, tf.newaxis, tf.newaxis]
+
+        def body(i, decon,):
             '''# Richardson-Lucy Iteration - logic taken largely from a combination of
             # the scikit-image (real domain) and DeconvolutionLab2 implementations (complex domain)
             # conv1 is the current model blurred with the PSF
@@ -312,8 +333,8 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             # conv1 is the current model blurred with the PSF
             conv1 = conv(decon, kern_fft)
 
-            # High-pass filter to avoid division by very small numbers (see DeconvolutionLab2)
-            # we wont do it here as we will use the delta values in denom and numerrator of division to get blur2
+            # High-pass filter to avoid division by very small numbers (see DeconvolutionLab2)?
+            # we wont do it here as we will use the delta parameter in denom and numerrator of division to get blur2
             # as per Stephan Ludwig et al 2019
             # should normalise blur2 and decon each time because numbers get big and we risk overflow when multiplying in next step
             conv1norm = conv1 / (tf.math.reduce_sum(conv1))
@@ -326,16 +347,26 @@ class RichardsonLucyDeconvolver(FFTIterativeDeconvolver):
             # decon is the  normalised blurred model multiplied by the model
             # Positivity constraint on result for iteration
             decon = tf.maximum(decon * ratio, 0.)
-            #decon = tf.maximum(decon * conv2, 0.)
+			# Smooth the intermediate result image with Gaussian of sigma 1 every 5th iteration
+            # to control noise buildup that Gold method is succeptible to.
+            # Use tf.nn.conv3d to convolve a Gaussian kernel with an image:
+            # Make Gaussian Kernel with desired specs using gaussian_kernel function defined above
+            if i % 5 == 0:
+                # Convolve decon with gauss kernel.
+                tf.nn.conv3d(decon, filter=gaussKernel, strides=[1, 1, 1, 1, 1], padding="SAME")
+            # normalise the result so the sum of the data is 1
+            decon = decon / (tf.math.reduce_sum(decon))
             
             # TODO - Smoothing every 5 iterations with gaussian or wiener. 
-            # TODO rescale back to input data sum intensity. , probably need to adjust deltaParam too. 
+            # TODO rescale back to input data sum intensity -  probably need to adjust deltaParam too. 
 
             # If given an "observer", pass the current image restoration and iteration counter to it
             if self.observer_fn is not None:
                 # Remove any cropping that may have been added as this is usually not desirable in observers
                 decon_crop = unpad_around_center(decon, tf.shape(datah))
-                # we can use these capurured observed tensors to evaluate eg convergence
+                # normalise the result so the sum of the data is 1
+                decon_crop = decon_crop / (tf.math.reduce_sum(decon_crop))
+				# we can use these captured observed tensors to evaluate eg convergence
                 # in eg. the observer function used.
                 _, i, decon, conv1  = tf_observer(
 				    [decon_crop, i, decon, conv1], self.observer_fn)
