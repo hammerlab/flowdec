@@ -67,7 +67,7 @@ print (PSF)
 kernel = imread(PSF)
 
 #base number of iterations - RL converges slowly so need tens of iterations or maybe hundreds. 
-base_iter = 250
+base_iter = 5
 
 
 # Create an observer function to monitor convergence, 
