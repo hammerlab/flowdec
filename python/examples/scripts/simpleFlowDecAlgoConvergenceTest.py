@@ -39,6 +39,7 @@ sys.stdout = open('FlowDecLogGold50.txt', 'w')
 startImports = time.process_time()   
 from skimage.external.tifffile import imsave, imread
 from skimage.metrics import structural_similarity as ssim
+#from tensorflow.image import ssim as ssim
 from flowdec import data as fd_data
 from flowdec import restoration as fd_restoration
 importsTime = (time.process_time() - startImports)
@@ -77,9 +78,12 @@ base_iter = 250
 # is generally not useful for anything other than development or debugging
 # imgs = []
 def observer(decon_crop, i, decon_pad, conv1, *args):
+    #normalise the raw data so its sum is 1
+    rawNorm = raw / raw.sum()
+    #the sum should be 1
+    sumRaw = rawNorm.sum()
     #imgs.append(decon_crop)
-    if i % 10 == 0:
-        sumRaw = raw.sum()
+    if i % 1 == 0:
         sumBlurredModel = decon_crop.sum()
 	    # compute convergence residuals between raw image and blurred model image
 		# with current test data these get bigger not smaller with iterations... weird..
@@ -87,9 +91,12 @@ def observer(decon_crop, i, decon_pad, conv1, *args):
         convergenceR = convergenceResiduals / sumRaw
 		# let's try structural similarity (as it's supposed to be better then mean square error)
 		# which indeed seems to track convergence of this dataset in a way that seems to match the image results. 
-        structSim = ssim(raw, decon_crop, data_range=decon_crop.max() - decon_crop.min())
+        #SSIM in skimage:
+        structSim = ssim(rawNorm, decon_crop, data_range=decon_crop.max() - decon_crop.min())
+        #SSIM in TensorFlow should be faster:  imported ft.image.ssim as ssim but this doesnt work... fix if too slow otherwize. 
+        # structSim = ssim(raw, decon_crop, max_val=1.0, filter_size=11, filter_sigma=1.0, k1=0.01, k2=0.03)
         print('Iter,{},RawSum,{:.3f},DeconSum,{:.3f},DeconMax,{:.3f},DeconStDev,{:.3f},SumResiduals,{:.3f},ConvergeR,{:.16f},SSIM,{:.3f}'.format(
-		   i, sumRaw, sumBlurredModel, decon_crop.max(), decon_crop.std(), convergenceResiduals.max(), convergenceR.max(), structSim.max()))
+            i, sumRaw, sumBlurredModel, decon_crop.max(), decon_crop.std(), convergenceResiduals.max(), convergenceR.max(), structSim.max()))
 
 # Run the deconvolution process and note that deconvolution initialization is best kept separate from 
 # execution since the "initialize" operation corresponds to creating a TensorFlow graph, which is a 
