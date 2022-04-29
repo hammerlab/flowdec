@@ -2,6 +2,10 @@
 
 # Flowdec
 
+\***Note**\*: This library is no longer actively maintained and requires older versions of Python and TensorFlow to run.  If you have point spread functions already, then [cucim.skimage.restoration.richardson_lucy](https://docs.rapids.ai/api/cucim/stable/api.html#cucim.skimage.restoration.richardson_lucy) is another implementation worth considering.  If not, then the utilities in this library for generating them may still be useful.
+
+---
+
 **Flowdec** is a library containing [TensorFlow](https://github.com/tensorflow/tensorflow) (TF) implementations of image and signal deconvolution algorithms.  Currently, only [Richardson-Lucy Deconvolution](https://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution) has been implemented but others may come in the future.
 
 Flowdec is designed to construct and execute TF graphs in python as well as use frozen, exported graphs from other languages (e.g. Java).
